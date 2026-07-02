@@ -9,14 +9,14 @@ interface Props {
 export default function CategoryChart({ data }: Props) {
   if (data.length === 0) {
     return (
-      <div className="flex h-64 items-center justify-center rounded-lg border border-dashed border-gray-300 text-sm text-gray-400">
+      <div className="flex h-64 items-center justify-center rounded-lg border border-dashed border-input text-sm text-muted-foreground">
         이 달의 지출이 없습니다.
       </div>
     );
   }
 
   return (
-    <div className="h-64 w-full rounded-lg border border-gray-200 bg-white p-2 shadow-sm">
+    <div className="h-64 w-full rounded-lg border border-border bg-card p-2 shadow-sm">
       <ResponsiveContainer width="100%" height="100%">
         <PieChart>
           <Pie

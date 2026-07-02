@@ -10,6 +10,14 @@
   --background: 210 40% 98%;
   --foreground: 222 47% 11%;
 
+  /* 중립 표면·텍스트 */
+  --card: 0 0% 100%;
+  --card-foreground: 222 47% 11%;
+  --muted: 214 32% 91%;
+  --muted-foreground: 215 16% 47%;
+  --input: 214 32% 85%;
+  --ring: 221 70% 46%;
+
   --primary: 221 70% 46%;
   --primary-foreground: 210 40% 98%;
 

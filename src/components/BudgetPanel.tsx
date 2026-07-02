@@ -10,19 +10,19 @@ interface Props {
 }
 
 const STATUS_BAR: Record<BudgetStatus, string> = {
-  ok: 'bg-green-500',
-  warning: 'bg-yellow-400',
-  over: 'bg-red-500',
+  ok: 'bg-income',
+  warning: 'bg-warning',
+  over: 'bg-destructive',
 };
 
 const STATUS_TEXT: Record<BudgetStatus, string> = {
-  ok: 'text-gray-500',
-  warning: 'text-yellow-600',
-  over: 'text-red-600',
+  ok: 'text-muted-foreground',
+  warning: 'text-warning-foreground',
+  over: 'text-destructive',
 };
 
 const inputClass =
-  'w-32 rounded-md border border-gray-300 px-2 py-1 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500';
+  'w-32 rounded-md border border-input px-2 py-1 text-sm focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring';
 
 interface RowProps {
   category: Category;
@@ -48,14 +48,14 @@ function BudgetRow({ category, month, limit, spent }: RowProps) {
   const status = budgetStatus(ratio);
 
   return (
-    <div className="flex flex-col gap-1.5 rounded-lg border border-gray-200 bg-white p-3 shadow-sm">
+    <div className="flex flex-col gap-1.5 rounded-lg border border-border bg-card p-3 shadow-sm">
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-2">
           <span
             className="h-2.5 w-2.5 rounded-full"
             style={{ backgroundColor: category.color }}
           />
-          <span className="font-medium text-gray-800">{category.name}</span>
+          <span className="font-medium text-foreground">{category.name}</span>
         </div>
         <input
           type="number"
@@ -73,7 +73,7 @@ function BudgetRow({ category, month, limit, spent }: RowProps) {
 
       {limit > 0 && (
         <>
-          <div className="h-2 w-full overflow-hidden rounded-full bg-gray-100">
+          <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
             <div
               className={`h-full rounded-full transition-all ${STATUS_BAR[status]}`}
               style={{ width: `${Math.min(ratio, 1) * 100}%` }}

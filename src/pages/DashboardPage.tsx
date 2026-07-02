@@ -27,18 +27,18 @@ export default function DashboardPage() {
 
       <div className="grid gap-6 lg:grid-cols-2">
         <section className="flex flex-col gap-2">
-          <h2 className="text-lg font-semibold text-gray-800">카테고리별 지출</h2>
+          <h2 className="text-lg font-semibold text-foreground">카테고리별 지출</h2>
           <CategoryChart data={stats.expenseByCategory} />
         </section>
         <section className="flex flex-col gap-2">
-          <h2 className="text-lg font-semibold text-gray-800">월별 수입·지출 추이</h2>
+          <h2 className="text-lg font-semibold text-foreground">월별 수입·지출 추이</h2>
           <MonthlyChart data={stats.monthlySeries} />
         </section>
       </div>
 
       <section className="flex flex-col gap-2">
-        <h2 className="text-lg font-semibold text-gray-800">
-          이 달의 내역 <span className="text-sm text-gray-400">({monthTx.length}건)</span>
+        <h2 className="text-lg font-semibold text-foreground">
+          이 달의 내역 <span className="text-sm text-muted-foreground">({monthTx.length}건)</span>
         </h2>
         {/* 대시보드에서는 조회 중심 — 수정은 거래 탭에서, 여기선 삭제만 제공 */}
         <TransactionList transactions={monthTx} onDelete={deleteTransaction} />

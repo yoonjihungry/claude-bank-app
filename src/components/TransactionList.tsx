@@ -12,7 +12,7 @@ interface Props {
 export default function TransactionList({ transactions, onEdit, onDelete }: Props) {
   if (transactions.length === 0) {
     return (
-      <p className="rounded-lg border border-dashed border-gray-300 p-8 text-center text-sm text-gray-400">
+      <p className="rounded-lg border border-dashed border-input p-8 text-center text-sm text-muted-foreground">
         거래 내역이 없습니다.
       </p>
     );
@@ -26,7 +26,7 @@ export default function TransactionList({ transactions, onEdit, onDelete }: Prop
         return (
           <li
             key={tx.id}
-            className="flex items-center gap-3 rounded-lg border border-gray-200 bg-white p-3 shadow-sm"
+            className="flex items-center gap-3 rounded-lg border border-border bg-card p-3 shadow-sm"
           >
             <span
               className="h-2.5 w-2.5 shrink-0 rounded-full"
@@ -34,18 +34,18 @@ export default function TransactionList({ transactions, onEdit, onDelete }: Prop
             />
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2">
-                <span className="font-medium text-gray-800">
+                <span className="font-medium text-foreground">
                   {category?.name ?? '알 수 없음'}
                 </span>
-                <span className="text-xs text-gray-400">{formatDate(tx.date)}</span>
+                <span className="text-xs text-muted-foreground">{formatDate(tx.date)}</span>
               </div>
               {tx.memo && (
-                <p className="truncate text-sm text-gray-500">{tx.memo}</p>
+                <p className="truncate text-sm text-muted-foreground">{tx.memo}</p>
               )}
             </div>
             <span
               className={`shrink-0 font-semibold ${
-                isExpense ? 'text-red-500' : 'text-green-600'
+                isExpense ? 'text-expense' : 'text-income'
               }`}
             >
               {formatSignedCurrency(tx.amount, isExpense ? '-' : '+')}
@@ -55,7 +55,7 @@ export default function TransactionList({ transactions, onEdit, onDelete }: Prop
                 <button
                   type="button"
                   onClick={() => onEdit(tx)}
-                  className="rounded px-2 py-1 text-xs text-gray-500 transition hover:bg-gray-100"
+                  className="rounded px-2 py-1 text-xs text-muted-foreground transition hover:bg-muted"
                 >
                   수정
                 </button>
@@ -63,7 +63,7 @@ export default function TransactionList({ transactions, onEdit, onDelete }: Prop
               <button
                 type="button"
                 onClick={() => onDelete(tx.id)}
-                className="rounded px-2 py-1 text-xs text-red-500 transition hover:bg-red-50"
+                className="rounded px-2 py-1 text-xs text-destructive transition hover:bg-destructive/10"
               >
                 삭제
               </button>

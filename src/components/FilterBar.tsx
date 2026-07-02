@@ -8,7 +8,7 @@ interface Props {
 }
 
 const controlClass =
-  'rounded-md border border-gray-300 px-2 py-1.5 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500';
+  'rounded-md border border-input px-2 py-1.5 text-sm focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring';
 
 export default function FilterBar({ filter, onChange }: Props) {
   // 타입이 지정되면 그 타입의 카테고리만, 아니면 전체 카테고리를 보여준다.
@@ -41,7 +41,7 @@ export default function FilterBar({ filter, onChange }: Props) {
     (filter.keyword ?? '') !== '';
 
   return (
-    <div className="flex flex-wrap items-center gap-2 rounded-lg border border-gray-200 bg-white p-3 shadow-sm">
+    <div className="flex flex-wrap items-center gap-2 rounded-lg border border-border bg-card p-3 shadow-sm">
       <input
         type="month"
         value={filter.month ?? ''}
@@ -111,7 +111,7 @@ export default function FilterBar({ filter, onChange }: Props) {
         <button
           type="button"
           onClick={() => onChange({})}
-          className="rounded-md border border-gray-300 px-3 py-1.5 text-sm text-gray-600 transition hover:bg-gray-100"
+          className="rounded-md border border-input px-3 py-1.5 text-sm text-muted-foreground transition hover:bg-muted"
         >
           초기화
         </button>

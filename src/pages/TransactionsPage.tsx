@@ -29,7 +29,7 @@ export default function TransactionsPage() {
   return (
     <div className="grid gap-6 md:grid-cols-[320px_1fr]">
       <section className="flex flex-col gap-2">
-        <h2 className="text-lg font-semibold text-gray-800">
+        <h2 className="text-lg font-semibold text-foreground">
           {editing ? '거래 수정' : '거래 추가'}
         </h2>
         <TransactionForm
@@ -41,8 +41,8 @@ export default function TransactionsPage() {
       </section>
 
       <section className="flex flex-col gap-3">
-        <h2 className="text-lg font-semibold text-gray-800">
-          내역 <span className="text-sm text-gray-400">({transactions.length}건)</span>
+        <h2 className="text-lg font-semibold text-foreground">
+          내역 <span className="text-sm text-muted-foreground">({transactions.length}건)</span>
         </h2>
         <FilterBar filter={filter} onChange={setFilter} />
         <TransactionList

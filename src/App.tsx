@@ -17,8 +17,8 @@ function App() {
 
   return (
     <LedgerProvider>
-      <div className="min-h-screen bg-gray-50 text-gray-900">
-        <header className="border-b border-gray-200 bg-white">
+      <div className="min-h-screen bg-background text-foreground">
+        <header className="border-b border-border bg-card">
           <div className="mx-auto flex max-w-5xl items-center gap-6 px-6 py-4">
             <h1 className="text-xl font-bold">💰 가계부</h1>
             <nav className="flex gap-1">
@@ -29,8 +29,8 @@ function App() {
                   onClick={() => setTab(t.id)}
                   className={`rounded-md px-3 py-1.5 text-sm font-medium transition ${
                     tab === t.id
-                      ? 'bg-blue-600 text-white'
-                      : 'text-gray-600 hover:bg-gray-100'
+                      ? 'bg-primary text-primary-foreground'
+                      : 'text-muted-foreground hover:bg-muted'
                   }`}
                 >
                   {t.label}

@@ -58,12 +58,12 @@ export default function TransactionForm({ initial, onSubmit, onCancel }: Props) 
   }
 
   const inputClass =
-    'w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500';
+    'w-full rounded-md border border-input px-3 py-2 text-sm focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring';
 
   return (
     <form
       onSubmit={handleSubmit}
-      className="flex flex-col gap-3 rounded-lg border border-gray-200 bg-white p-4 shadow-sm"
+      className="flex flex-col gap-3 rounded-lg border border-border bg-card p-4 shadow-sm"
     >
       <div className="flex gap-2">
         {(['expense', 'income'] as TxType[]).map((t) => (
@@ -74,9 +74,9 @@ export default function TransactionForm({ initial, onSubmit, onCancel }: Props) 
             className={`flex-1 rounded-md px-3 py-2 text-sm font-medium transition ${
               type === t
                 ? t === 'expense'
-                  ? 'bg-red-500 text-white'
-                  : 'bg-green-500 text-white'
-                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  ? 'bg-expense text-expense-foreground'
+                  : 'bg-income text-income-foreground'
+                : 'bg-muted text-muted-foreground hover:bg-input'
             }`}
           >
             {t === 'expense' ? '지출' : '수입'}
@@ -85,7 +85,7 @@ export default function TransactionForm({ initial, onSubmit, onCancel }: Props) 
       </div>
 
       <div className="grid grid-cols-2 gap-3">
-        <label className="flex flex-col gap-1 text-sm text-gray-600">
+        <label className="flex flex-col gap-1 text-sm text-muted-foreground">
           날짜
           <input
             type="date"
@@ -95,7 +95,7 @@ export default function TransactionForm({ initial, onSubmit, onCancel }: Props) 
             required
           />
         </label>
-        <label className="flex flex-col gap-1 text-sm text-gray-600">
+        <label className="flex flex-col gap-1 text-sm text-muted-foreground">
           카테고리
           <select
             value={category}
@@ -111,7 +111,7 @@ export default function TransactionForm({ initial, onSubmit, onCancel }: Props) 
         </label>
       </div>
 
-      <label className="flex flex-col gap-1 text-sm text-gray-600">
+      <label className="flex flex-col gap-1 text-sm text-muted-foreground">
         금액 (원)
         <input
           type="number"
@@ -126,7 +126,7 @@ export default function TransactionForm({ initial, onSubmit, onCancel }: Props) 
         />
       </label>
 
-      <label className="flex flex-col gap-1 text-sm text-gray-600">
+      <label className="flex flex-col gap-1 text-sm text-muted-foreground">
         메모 (선택)
         <input
           type="text"
@@ -137,12 +137,12 @@ export default function TransactionForm({ initial, onSubmit, onCancel }: Props) 
         />
       </label>
 
-      {error && <p className="text-sm text-red-500">{error}</p>}
+      {error && <p className="text-sm text-destructive">{error}</p>}
 
       <div className="flex gap-2">
         <button
           type="submit"
-          className="flex-1 rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-700"
+          className="flex-1 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90"
         >
           {isEdit ? '수정 완료' : '추가'}
         </button>
@@ -150,7 +150,7 @@ export default function TransactionForm({ initial, onSubmit, onCancel }: Props) 
           <button
             type="button"
             onClick={onCancel}
-            className="rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-600 transition hover:bg-gray-100"
+            className="rounded-md border border-input px-4 py-2 text-sm font-medium text-muted-foreground transition hover:bg-muted"
           >
             취소
           </button>

@@ -10,6 +10,7 @@ import {
 } from 'recharts';
 import type { MonthlyPoint } from '../hooks/useStatistics';
 import { formatCurrency } from '../utils/format';
+import { tokenColor } from '../utils/tokenColor';
 
 interface Props {
   data: MonthlyPoint[];
@@ -28,7 +29,7 @@ function amountTick(value: number): string {
 
 export default function MonthlyChart({ data }: Props) {
   return (
-    <div className="h-64 w-full rounded-lg border border-gray-200 bg-white p-2 shadow-sm">
+    <div className="h-64 w-full rounded-lg border border-border bg-card p-2 shadow-sm">
       <ResponsiveContainer width="100%" height="100%">
         <BarChart data={data} margin={{ top: 8, right: 8, left: 8, bottom: 0 }}>
           <CartesianGrid strokeDasharray="3 3" vertical={false} />
@@ -39,8 +40,8 @@ export default function MonthlyChart({ data }: Props) {
             labelFormatter={(label) => monthTick(String(label))}
           />
           <Legend />
-          <Bar dataKey="income" name="수입" fill="#22c55e" radius={[4, 4, 0, 0]} />
-          <Bar dataKey="expense" name="지출" fill="#ef4444" radius={[4, 4, 0, 0]} />
+          <Bar dataKey="income" name="수입" fill={tokenColor('income')} radius={[4, 4, 0, 0]} />
+          <Bar dataKey="expense" name="지출" fill={tokenColor('expense')} radius={[4, 4, 0, 0]} />
         </BarChart>
       </ResponsiveContainer>
     </div>
