@@ -1,32 +1,41 @@
-# React + TypeScript + Vite
+# claude-bank-app (가계부)
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+개인용 가계부 웹앱. 수입/지출을 기록하고 카테고리·월별로 통계를 보며 예산을 관리한다.
+서버·로그인 없이 브라우저에서 바로 동작하며, 데이터는 브라우저 localStorage에 저장된다.
 
-Currently, two official plugins are available:
+## 주요 기능
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- **거래 관리** — 수입/지출 추가·수정·삭제 (날짜, 카테고리, 금액, 메모)
+- **대시보드** — 월별 수입/지출/잔액 요약, 카테고리별 지출 파이 차트, 월별 추이 막대 차트
+- **예산** — 카테고리별 월 예산 설정, 사용률 80%(주의)·100%(초과) 경고
+- **필터** — 기간·구분·카테고리·금액·메모로 거래 조회
+- **영속화** — localStorage 자동 저장 (새로고침해도 유지)
 
-## React Compiler
+## 기술 스택
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- React + Vite + TypeScript
+- Tailwind CSS v4 (`src/styles/`의 디자인 토큰 기반)
+- Recharts (차트), date-fns (날짜), uuid
 
-## Expanding the Oxlint configuration
+## 실행
 
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
-
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+```bash
+npm install
+npm run dev     # 개발 서버 (http://localhost:5173)
+npm run build   # 타입 체크 + 프로덕션 빌드
+npm run lint    # oxlint
 ```
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+## 구조 개요
+
+```
+src/
+├─ context/    # 전역 상태 (LedgerContext, useReducer)
+├─ storage/    # localStorage 접근 계층 (repository)
+├─ hooks/      # 조회·집계 로직 (useTransactions, useStatistics)
+├─ components/ # UI 컴포넌트
+├─ pages/      # 대시보드 / 거래 / 예산 페이지
+└─ styles/     # Tailwind 진입 CSS + 디자인 토큰
+```
+
+프로젝트 규칙과 설계 배경은 [`CLAUDE.md`](CLAUDE.md), [`docs/`](docs/)(changelog · decisions · style-tokens) 참조.
