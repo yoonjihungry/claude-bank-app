@@ -2,6 +2,20 @@
 
 주요 설계 결정을 "배경 / 대안 / 결정 이유" 형식으로 최신순으로 기록한다.
 
+## 2026-07-02 — 색상 디자인 토큰(shadcn HSL) + Tailwind v4 매핑
+
+**배경**
+컴포넌트마다 `text-red-500` 같은 Tailwind 기본 색을 하드코딩하고 있어, 톤을 일관되게 잡고 이후 다크 모드로 확장하기 어려웠다. "신뢰감 있고 차분한 / 지출·경고는 눈에 띄게"라는 톤에 맞는 의미 기반 색 체계가 필요했다.
+
+**대안**
+- Tailwind 기본 팔레트(`blue-600`, `red-500` 등)를 계속 하드코딩
+- `tailwind.config.js`(v3 방식)에 `hsl(var(--x))` 색을 매핑
+- shadcn HSL 컨벤션 토큰을 `:root`에 두고 Tailwind v4의 `@theme inline`으로 매핑
+- 색상 값을 hex로 직접 토큰화
+
+**결정 이유**
+shadcn HSL 컨벤션(`--token: "H S% L%"`) + Tailwind v4 `@theme inline` 매핑을 선택했다. 프로젝트가 이미 Tailwind v4(`@tailwindcss/vite`, config 파일 없음)라 v3용 `tailwind.config.js`를 새로 만드는 것은 방식이 어긋난다. HSL 채널 분리 표기는 다크 모드에서 명도(L)만 조정하기 쉽고, `hsl(var(--x) / a)` 형태의 알파 합성도 자연스럽다. 의미 기반 토큰(income/expense/warning/destructive)으로 두면 색을 한 곳에서 바꿔도 전역 반영된다. 팔레트는 눈대중이 아니라 dataviz 검증 스크립트로 확정했고(적록 색맹 구분 ΔE 18.3로 통과), 다크 모드는 당장 불필요해 `:root`만 우선 정의했다. 토큰 인프라만 먼저 만들고 컴포넌트 적용은 별도 단계로 분리했다.
+
 ## 2026-07-02 — 탭 기반 단일 페이지 네비게이션 (라우터 미도입)
 
 **배경**

@@ -7,7 +7,7 @@
 - localStorage 영속화 (서버 불필요, 개인용에 충분 — 추후 API 교체 가능하도록 저장소 계층 분리)
 - Recharts (카테고리별 통계 시각화)
 - date-fns (날짜 유틸)
-- 스타일: Tailwind CSS v4 (`@tailwindcss/vite` 플러그인, `src/index.css`에서 `@import "tailwindcss"`). 별도 CSS 파일 없이 컴포넌트에 유틸리티 클래스로 스타일링한다.
+- 스타일: Tailwind CSS v4 (`@tailwindcss/vite` 플러그인). CSS 파일은 `src/styles/`에 모은다 — `src/styles/index.css`(진입, `@import "tailwindcss"` + `@theme` 매핑)와 `src/styles/tokens.css`(shadcn HSL 디자인 토큰). 컴포넌트는 유틸리티 클래스로 스타일링한다.
 
 ## Dependencies
 - `recharts`, `date-fns`, `uuid`
@@ -85,6 +85,10 @@ interface Budget {
 - **상태 관리**: 전역 상태는 `LedgerContext` + `useReducer`만 사용한다. 액션 이름: `ADD_TX / UPDATE_TX / DELETE_TX / SET_BUDGET`. 상태가 바뀌면 `repository`를 통해 localStorage에 자동 저장한다(useEffect 구독).
 - **저장소 계층**: localStorage 접근은 반드시 `storage/repository.ts`를 통해서만 한다 (`getTransactions/saveTransactions/getBudgets/saveBudgets`). 컴포넌트나 훅에서 `localStorage`를 직접 호출하지 않는다 — 나중에 fetch 기반 API로 교체할 때 이 계층만 바꾸면 되도록 유지한다.
 - **집계/통계 로직**: 컴포넌트 내부에서 직접 계산하지 않고, `hooks/` 아래 `useMemo` 기반 커스텀 훅으로 분리한다.
+
+## Styling Rules
+- **색상은 디자인 토큰만 사용한다**: `src/styles/tokens.css`(Source of Truth)에 정의된 토큰의 Tailwind 유틸리티(`bg-primary`, `text-income` 등)만 쓰고, HEX/`rgb()` 하드코딩이나 Tailwind 기본 팔레트(`text-red-500` 등)를 쓰지 않는다. 필요한 색이 없으면 `tokens.css`에 토큰을 먼저 추가한다.
+- 토큰 사용 가이드는 `docs/style-tokens.md` 참조.
 
 ## Commands
 - `npm run dev` — 개발 서버 실행
