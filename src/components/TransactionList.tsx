@@ -1,4 +1,4 @@
-import { getCategory } from '../constants/categories';
+import { useCategories } from '../hooks/useCategories';
 import type { Transaction } from '../types';
 import { formatDate, formatSignedCurrency } from '../utils/format';
 
@@ -10,6 +10,8 @@ interface Props {
 }
 
 export default function TransactionList({ transactions, onEdit, onDelete }: Props) {
+  const { byId } = useCategories();
+
   if (transactions.length === 0) {
     return (
       <p className="rounded-lg border border-dashed border-input p-8 text-center text-sm text-muted-foreground">
@@ -21,7 +23,7 @@ export default function TransactionList({ transactions, onEdit, onDelete }: Prop
   return (
     <ul className="flex flex-col gap-2">
       {transactions.map((tx) => {
-        const category = getCategory(tx.category);
+        const category = byId(tx.category);
         const isExpense = tx.type === 'expense';
         return (
           <li

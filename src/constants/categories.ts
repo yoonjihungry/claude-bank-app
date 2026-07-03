@@ -1,7 +1,9 @@
 import type { Category } from '../types';
 
 /**
- * 기본 카테고리 목록.
+ * 기본 카테고리 목록 — 최초 실행 시 저장소를 시드하는 값이다.
+ * 이후에는 사용자가 추가/수정/삭제한 카테고리가 localStorage에 저장되고,
+ * 런타임 조회는 `hooks/useCategories`를 통해 이뤄진다(정적 조회 함수를 두지 않는다).
  * color는 Recharts 차트에서 카테고리를 구분하는 데 사용된다.
  */
 export const DEFAULT_CATEGORIES: Category[] = [
@@ -21,12 +23,21 @@ export const DEFAULT_CATEGORIES: Category[] = [
   { id: 'etc-income', name: '기타(수입)', type: 'income', color: '#84cc16' },
 ];
 
-/** id로 카테고리를 조회한다. 없으면 undefined. */
-export function getCategory(id: string): Category | undefined {
-  return DEFAULT_CATEGORIES.find((c) => c.id === id);
-}
-
-/** 특정 타입(income/expense)의 카테고리만 반환한다. */
-export function categoriesByType(type: Category['type']): Category[] {
-  return DEFAULT_CATEGORIES.filter((c) => c.type === type);
-}
+/**
+ * 카테고리 추가/수정 시 고르는 프리셋 색 팔레트(dataviz 검증색).
+ * 이 목록 밖의 색은 색상 선택기로 직접 지정할 수 있다.
+ */
+export const CATEGORY_PALETTE: string[] = [
+  '#e66767',
+  '#d95926',
+  '#c98500',
+  '#d55181',
+  '#199e70',
+  '#9085e9',
+  '#3987e5',
+  '#8a93a3',
+  '#22b479',
+  '#10b981',
+  '#0ea5e9',
+  '#84cc16',
+];

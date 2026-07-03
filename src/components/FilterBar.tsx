@@ -1,4 +1,4 @@
-import { DEFAULT_CATEGORIES, categoriesByType, getCategory } from '../constants/categories';
+import { useCategories } from '../hooks/useCategories';
 import type { TransactionFilter } from '../hooks/useTransactions';
 import type { TxType } from '../types';
 
@@ -11,10 +11,9 @@ const controlClass =
   'rounded-md border border-input px-2 py-1.5 text-sm focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring';
 
 export default function FilterBar({ filter, onChange }: Props) {
+  const { all, byType, byId } = useCategories();
   // 타입이 지정되면 그 타입의 카테고리만, 아니면 전체 카테고리를 보여준다.
-  const categoryOptions = filter.type
-    ? categoriesByType(filter.type)
-    : DEFAULT_CATEGORIES;
+  const categoryOptions = filter.type ? byType(filter.type) : all;
 
   function patch(next: Partial<TransactionFilter>) {
     onChange({ ...filter, ...next });
@@ -24,7 +23,7 @@ export default function FilterBar({ filter, onChange }: Props) {
     const type = value ? (value as TxType) : undefined;
     // 타입 변경 시 현재 카테고리가 새 타입에 속하지 않으면 해제한다.
     const keepCategory =
-      filter.categoryId && (!type || getCategory(filter.categoryId)?.type === type);
+      filter.categoryId && (!type || byId(filter.categoryId)?.type === type);
     onChange({
       ...filter,
       type,

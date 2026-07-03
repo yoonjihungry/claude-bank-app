@@ -1,6 +1,5 @@
 import { useMemo } from 'react';
 import { useLedger } from '../context/LedgerContext';
-import { getCategory } from '../constants/categories';
 
 export interface CategorySlice {
   categoryId: string;
@@ -54,9 +53,10 @@ export function budgetStatus(ratio: number): BudgetStatus {
  * 집계 로직은 컴포넌트가 아닌 이 훅에 둔다.
  */
 export function useStatistics(month: string): Statistics {
-  const { transactions, budgets } = useLedger();
+  const { transactions, budgets, categories } = useLedger();
 
   return useMemo(() => {
+    const categoryById = new Map(categories.map((c) => [c.id, c]));
     let totalIncome = 0;
     let totalExpense = 0;
     const expenseMap = new Map<string, number>();
@@ -88,7 +88,7 @@ export function useStatistics(month: string): Statistics {
 
     const expenseByCategory: CategorySlice[] = [...expenseMap.entries()]
       .map(([categoryId, value]) => {
-        const cat = getCategory(categoryId);
+        const cat = categoryById.get(categoryId);
         return {
           categoryId,
           name: cat?.name ?? '알 수 없음',
@@ -101,7 +101,7 @@ export function useStatistics(month: string): Statistics {
     const budgetUsage: BudgetUsage[] = budgets
       .filter((b) => b.month === month)
       .map((b) => {
-        const cat = getCategory(b.categoryId);
+        const cat = categoryById.get(b.categoryId);
         const spent = expenseMap.get(b.categoryId) ?? 0;
         const ratio = b.limit > 0 ? spent / b.limit : 0;
         return {
@@ -124,5 +124,5 @@ export function useStatistics(month: string): Statistics {
       dailyTrend,
       budgetUsage,
     };
-  }, [transactions, budgets, month]);
+  }, [transactions, budgets, categories, month]);
 }

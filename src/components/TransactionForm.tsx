@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from 'react';
 import { format } from 'date-fns';
-import { categoriesByType } from '../constants/categories';
+import { useCategories } from '../hooks/useCategories';
 import type { Transaction, TxType } from '../types';
 
 interface Props {
@@ -13,28 +13,29 @@ interface Props {
 const today = () => format(new Date(), 'yyyy-MM-dd');
 
 export default function TransactionForm({ initial, onSubmit, onCancel }: Props) {
+  const { byType } = useCategories();
   const [type, setType] = useState<TxType>(initial?.type ?? 'expense');
   const [amount, setAmount] = useState(initial ? String(initial.amount) : '');
   const [category, setCategory] = useState(
-    initial?.category ?? categoriesByType('expense')[0].id,
+    initial?.category ?? byType('expense')[0]?.id ?? '',
   );
   const [date, setDate] = useState(initial?.date ?? today());
   const [memo, setMemo] = useState(initial?.memo ?? '');
   const [error, setError] = useState('');
 
   const isEdit = initial != null;
-  const options = categoriesByType(type);
+  const options = byType(type);
 
   function handleTypeChange(next: TxType) {
     setType(next);
     // 타입이 바뀌면 현재 카테고리가 유효하지 않을 수 있으므로 첫 카테고리로 초기화
-    setCategory(categoriesByType(next)[0].id);
+    setCategory(byType(next)[0]?.id ?? '');
   }
 
   function reset() {
     setType('expense');
     setAmount('');
-    setCategory(categoriesByType('expense')[0].id);
+    setCategory(byType('expense')[0]?.id ?? '');
     setDate(today());
     setMemo('');
     setError('');

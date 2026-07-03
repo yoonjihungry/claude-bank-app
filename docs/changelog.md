@@ -2,6 +2,14 @@
 
 의미 있는 변경 사항을 "날짜 — 무엇을 바꿨는지" 형식으로 최신순으로 기록한다.
 
+## 2026-07-03 — 카테고리 추가/수정/삭제 기능 (예산 페이지)
+
+- 카테고리를 상수에서 **편집 가능한 영속 상태로 승격**했다. `repository`에 `getCategories/saveCategories`(키 `bankapp.categories`, 최초 실행 시 `DEFAULT_CATEGORIES`로 시드), `LedgerContext`에 `ADD/UPDATE/DELETE_CATEGORY` 액션과 저장 구독을 추가했다.
+- 정적 `getCategory/categoriesByType`를 제거하고 **`hooks/useCategories`**(all·byType·byId·nextColor·CRUD)로 일원화했다. 소비처(`FilterBar`·`TransactionForm`·`TransactionList`·`BudgetPanel`·`useStatistics`)를 모두 이 훅 기반으로 교체했다.
+- **예산 페이지 UI 개편**: "카테고리별 예산" 제목 오른쪽 **＋ 버튼**으로 카테고리 추가, 각 행 오른쪽 **톱니바퀴 버튼**으로 수정/삭제. 기존 인라인 예산 입력칸은 제거하고 사용률 막대/퍼센트만 표시한다.
+- **카테고리 모달**(`CategoryModal`): 헤더(닫기·제목·완료) + 이름 + 색상 + 이 달 예산. 색상은 **프리셋 팔레트 스와치 + 자유 색상 선택기(`input[type=color]`)** 둘 다 제공. 수정 모드에는 삭제 버튼.
+- **삭제 정합성**: 카테고리를 지우면 그 카테고리의 예산도 함께 삭제하고, 이미 기록된 거래는 남겨 ‘미분류/알 수 없음’으로 표시한다. 지출 카테고리가 1개뿐이면 삭제를 막는다.
+
 ## 2026-07-03 — 대시보드를 3섹션(오늘의 소비·캘린더·이번달 소비금액)으로 재구성
 
 - 참조 이미지에 맞춰 대시보드를 3개 섹션으로 재구성했다:

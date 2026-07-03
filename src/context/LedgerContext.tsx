@@ -6,24 +6,30 @@ import {
   type ReactNode,
 } from 'react';
 import { v4 as uuid } from 'uuid';
-import type { Budget, Transaction } from '../types';
+import type { Budget, Category, Transaction } from '../types';
 import {
   getBudgets,
+  getCategories,
   getTransactions,
   saveBudgets,
+  saveCategories,
   saveTransactions,
 } from '../storage/repository';
 
 interface LedgerState {
   transactions: Transaction[];
   budgets: Budget[];
+  categories: Category[];
 }
 
 type LedgerAction =
   | { type: 'ADD_TX'; payload: Transaction }
   | { type: 'UPDATE_TX'; payload: Transaction }
   | { type: 'DELETE_TX'; payload: { id: string } }
-  | { type: 'SET_BUDGET'; payload: Budget };
+  | { type: 'SET_BUDGET'; payload: Budget }
+  | { type: 'ADD_CATEGORY'; payload: Category }
+  | { type: 'UPDATE_CATEGORY'; payload: Category }
+  | { type: 'DELETE_CATEGORY'; payload: { id: string } };
 
 function reducer(state: LedgerState, action: LedgerAction): LedgerState {
   switch (action.type) {
@@ -56,6 +62,28 @@ function reducer(state: LedgerState, action: LedgerAction): LedgerState {
       };
     }
 
+    case 'ADD_CATEGORY':
+      return { ...state, categories: [...state.categories, action.payload] };
+
+    case 'UPDATE_CATEGORY':
+      return {
+        ...state,
+        categories: state.categories.map((c) =>
+          c.id === action.payload.id ? action.payload : c,
+        ),
+      };
+
+    case 'DELETE_CATEGORY': {
+      const { id } = action.payload;
+      // 카테고리를 지우면 그 카테고리에 걸린 예산도 함께 제거한다.
+      // (그 카테고리로 기록된 거래는 남기며, 조회 시 '미분류'로 표시된다.)
+      return {
+        ...state,
+        categories: state.categories.filter((c) => c.id !== id),
+        budgets: state.budgets.filter((b) => b.categoryId !== id),
+      };
+    }
+
     default:
       return state;
   }
@@ -66,6 +94,7 @@ function init(): LedgerState {
   return {
     transactions: getTransactions(),
     budgets: getBudgets(),
+    categories: getCategories(),
   };
 }
 
@@ -76,6 +105,11 @@ interface LedgerContextValue extends LedgerState {
   deleteTransaction: (id: string) => void;
   /** categoryId+month 기준 upsert. limit<=0이면 예산을 제거한다. */
   setBudget: (budget: Budget) => void;
+  /** id를 자동 생성하여 카테고리를 추가하고, 생성된 id를 반환한다. */
+  addCategory: (input: Omit<Category, 'id'>) => string;
+  updateCategory: (category: Category) => void;
+  /** 카테고리와 그에 걸린 예산을 함께 제거한다. */
+  deleteCategory: (id: string) => void;
 }
 
 const LedgerContext = createContext<LedgerContextValue | null>(null);
@@ -92,6 +126,10 @@ export function LedgerProvider({ children }: { children: ReactNode }) {
     saveBudgets(state.budgets);
   }, [state.budgets]);
 
+  useEffect(() => {
+    saveCategories(state.categories);
+  }, [state.categories]);
+
   const value: LedgerContextValue = {
     ...state,
     addTransaction: (input) =>
@@ -99,6 +137,14 @@ export function LedgerProvider({ children }: { children: ReactNode }) {
     updateTransaction: (tx) => dispatch({ type: 'UPDATE_TX', payload: tx }),
     deleteTransaction: (id) => dispatch({ type: 'DELETE_TX', payload: { id } }),
     setBudget: (budget) => dispatch({ type: 'SET_BUDGET', payload: budget }),
+    addCategory: (input) => {
+      const id = uuid();
+      dispatch({ type: 'ADD_CATEGORY', payload: { ...input, id } });
+      return id;
+    },
+    updateCategory: (category) =>
+      dispatch({ type: 'UPDATE_CATEGORY', payload: category }),
+    deleteCategory: (id) => dispatch({ type: 'DELETE_CATEGORY', payload: { id } }),
   };
 
   return <LedgerContext.Provider value={value}>{children}</LedgerContext.Provider>;

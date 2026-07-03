@@ -26,13 +26,14 @@ claude-bank-app/
    ├─ types/
    │   └─ index.ts             # Transaction, Category, Budget 타입 정의
    ├─ constants/
-   │   └─ categories.ts        # 기본 카테고리 목록(식비, 교통, 급여 등)
+   │   └─ categories.ts        # 기본 카테고리 시드 + 프리셋 색 팔레트(CATEGORY_PALETTE)
    ├─ storage/
    │   └─ repository.ts        # localStorage 읽기/쓰기 추상화 (추후 API로 교체 지점)
    ├─ context/
-   │   └─ LedgerContext.tsx    # 전역 상태(거래·예산) + reducer, CRUD 액션
+   │   └─ LedgerContext.tsx    # 전역 상태(거래·예산·카테고리) + reducer, CRUD 액션
    ├─ hooks/
    │   ├─ useTransactions.ts   # 거래 조회/필터 로직
+   │   ├─ useCategories.ts     # 카테고리 조회/편집(all·byType·byId·nextColor·CRUD)
    │   └─ useStatistics.ts     # 월별/카테고리별 집계 계산(useMemo)
    ├─ utils/
    │   ├─ format.ts            # 통화(원)·날짜 포맷팅
@@ -47,12 +48,13 @@ claude-bank-app/
    │   ├─ MonthlySpendingCard.tsx  # 이번달 소비금액 카드(섹션3)
    │   ├─ CategoryChart.tsx        # 카테고리별 파이 차트 (Recharts)
    │   ├─ DailyTrendChart.tsx      # 일자별 순액 막대+누적선 (Recharts, --primary)
-   │   ├─ BudgetPanel.tsx          # 카테고리별 예산 설정 + 초과 경고
+   │   ├─ BudgetPanel.tsx          # 카테고리별 예산 사용 현황 + 수정(톱니바퀴)
+   │   ├─ CategoryModal.tsx        # 카테고리 추가/수정(이름·색상·예산) 모달
    │   └─ MonthNavigator.tsx       # 이전/다음 월 이동
    └─ pages/
        ├─ DashboardPage.tsx    # 오늘의 소비 + 캘린더 + 이번달 소비금액 (3섹션)
        ├─ TransactionsPage.tsx # 카테고리/추이 차트 + 거래 입력·목록·필터
-       └─ BudgetPage.tsx       # 예산 설정·초과 현황
+       └─ BudgetPage.tsx       # 카테고리 추가·수정 + 예산 설정·초과 현황
 ```
 
 새 파일을 추가할 때는 위 구조를 따를 것. 예: 새 재사용 컴포넌트는 `src/components/`, 새 페이지는 `src/pages/`, 새 집계 로직은 `src/hooks/`.
@@ -85,8 +87,9 @@ interface Budget {
 ```
 
 ## Architecture Rules
-- **상태 관리**: 전역 상태는 `LedgerContext` + `useReducer`만 사용한다. 액션 이름: `ADD_TX / UPDATE_TX / DELETE_TX / SET_BUDGET`. 상태가 바뀌면 `repository`를 통해 localStorage에 자동 저장한다(useEffect 구독).
-- **저장소 계층**: localStorage 접근은 반드시 `storage/repository.ts`를 통해서만 한다 (`getTransactions/saveTransactions/getBudgets/saveBudgets`). 컴포넌트나 훅에서 `localStorage`를 직접 호출하지 않는다 — 나중에 fetch 기반 API로 교체할 때 이 계층만 바꾸면 되도록 유지한다.
+- **상태 관리**: 전역 상태는 `LedgerContext` + `useReducer`만 사용한다. 액션 이름: `ADD_TX / UPDATE_TX / DELETE_TX / SET_BUDGET / ADD_CATEGORY / UPDATE_CATEGORY / DELETE_CATEGORY`. 상태가 바뀌면 `repository`를 통해 localStorage에 자동 저장한다(useEffect 구독).
+- **저장소 계층**: localStorage 접근은 반드시 `storage/repository.ts`를 통해서만 한다 (`getTransactions/saveTransactions/getBudgets/saveBudgets/getCategories/saveCategories`). 컴포넌트나 훅에서 `localStorage`를 직접 호출하지 않는다 — 나중에 fetch 기반 API로 교체할 때 이 계층만 바꾸면 되도록 유지한다.
+- **카테고리 접근**: 카테고리는 편집 가능한 영속 상태다. 컴포넌트/훅은 `constants`의 정적 목록이 아니라 `hooks/useCategories`(`all/byType/byId/nextColor` + CRUD)를 통해 접근한다. `DEFAULT_CATEGORIES`는 최초 시드 용도로만 쓴다.
 - **집계/통계 로직**: 컴포넌트 내부에서 직접 계산하지 않고, `hooks/` 아래 `useMemo` 기반 커스텀 훅으로 분리한다.
 
 ## Styling Rules

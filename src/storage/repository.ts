@@ -1,4 +1,5 @@
-import type { Budget, Transaction } from '../types';
+import { DEFAULT_CATEGORIES } from '../constants/categories';
+import type { Budget, Category, Transaction } from '../types';
 
 /**
  * localStorage 접근을 캡슐화하는 저장소 계층.
@@ -10,6 +11,7 @@ import type { Budget, Transaction } from '../types';
 const KEYS = {
   transactions: 'bankapp.transactions',
   budgets: 'bankapp.budgets',
+  categories: 'bankapp.categories',
 } as const;
 
 function read<T>(key: string, fallback: T): T {
@@ -45,4 +47,13 @@ export function getBudgets(): Budget[] {
 
 export function saveBudgets(budgets: Budget[]): void {
   write(KEYS.budgets, budgets);
+}
+
+/** 저장된 카테고리가 없으면 기본 카테고리로 시드한다. */
+export function getCategories(): Category[] {
+  return read<Category[]>(KEYS.categories, DEFAULT_CATEGORIES);
+}
+
+export function saveCategories(categories: Category[]): void {
+  write(KEYS.categories, categories);
 }
