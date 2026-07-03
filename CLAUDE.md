@@ -88,7 +88,7 @@ interface Budget {
 
 ## Styling Rules
 - **색상은 디자인 토큰만 사용한다**: `src/styles/tokens.css`(Source of Truth)에 정의된 토큰의 Tailwind 유틸리티(`bg-primary`, `text-income` 등)만 쓰고, HEX/`rgb()` 하드코딩이나 Tailwind 기본 팔레트(`text-red-500` 등)를 쓰지 않는다. 필요한 색이 없으면 `tokens.css`에 토큰을 먼저 추가한다.
-- 토큰 사용 가이드는 `docs/style-tokens.md` 참조.
+- 타이포그래피/레이아웃/텍스트 색상 등 전체 디자인 가이드는 `docs/design-system.md` 참조.
 
 ## Commands
 - `npm run dev` — 개발 서버 실행

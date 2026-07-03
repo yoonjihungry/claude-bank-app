@@ -1,14 +1,17 @@
 /**
  * 디자인 토큰 (shadcn HSL 컨벤션)
- * 톤: 신뢰감 있고 차분한 / 지출·경고는 눈에 띄게
+ * 톤: 밝고 친근한 핀테크 / 지출·경고는 눈에 띄게
  *
  * 값은 "H S% L%" 형식으로만 저장한다(hsl() 래핑 없음).
  * Tailwind 매핑은 index.css의 @theme inline에서 hsl(var(--x))로 감싼다.
- * 다크 모드는 아직 미정의 — 필요 시 .dark 블록을 추가한다.
+ * 라이트 전용 — 다크 모드는 지원하지 않는다(.dark 블록을 추가하지 않는다).
  */
 :root {
   --background: 210 40% 98%;
   --foreground: 222 47% 11%;
+
+  /* 따뜻한 근검정(#1b1b12) — 순수 블랙 대신 쓰는 기본 텍스트 검정 */
+  --ink: 60 20% 9%;
 
   /* 중립 표면·텍스트 */
   --card: 0 0% 100%;
@@ -16,21 +19,21 @@
   --muted: 214 32% 91%;
   --muted-foreground: 215 16% 47%;
   --input: 214 32% 85%;
-  --ring: 221 70% 46%;
+  --ring: 213 77% 56%;
 
-  --primary: 221 70% 46%;
-  --primary-foreground: 210 40% 98%;
+  --primary: 213 77% 56%;
+  --primary-foreground: 0 0% 100%;
 
-  --income: 152 56% 36%;
+  --income: 156 68% 42%;
   --income-foreground: 0 0% 100%;
 
-  --expense: 0 74% 52%;
+  --expense: 3 81% 66%;
   --expense-foreground: 0 0% 100%;
 
-  --warning: 35 92% 48%;
-  --warning-foreground: 30 60% 12%;
+  --warning: 39 90% 59%;
+  --warning-foreground: 39 76% 8%;
 
-  --destructive: 0 72% 45%;
+  --destructive: 0 69% 61%;
   --destructive-foreground: 0 0% 100%;
 
   --border: 214 32% 88%;

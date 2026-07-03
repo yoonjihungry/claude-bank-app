@@ -1,11 +1,16 @@
 @import "tailwindcss";
+@import "pretendard-gov/dist/web/variable/pretendardvariable-gov-dynamic-subset.css";
 @import "./tokens.css";
 
 /* 토큰을 Tailwind 색 유틸리티로 매핑한다(bg-primary, text-income, border-border 등).
    inline 이므로 런타임 CSS 변수를 그대로 사용해 다크 모드 확장이 쉽다. */
 @theme inline {
+  /* 기본 sans 폰트를 Pretendard GOV로 지정 (Tailwind의 font-sans·본문 기본값) */
+  --font-sans: "Pretendard GOV Variable", system-ui, -apple-system, "Segoe UI", "Malgun Gothic", sans-serif;
+
   --color-background: hsl(var(--background));
   --color-foreground: hsl(var(--foreground));
+  --color-ink: hsl(var(--ink));
 
   --color-card: hsl(var(--card));
   --color-card-foreground: hsl(var(--card-foreground));
