@@ -1,16 +1,24 @@
 import { useState } from 'react';
+import CategoryChart from '../components/CategoryChart';
+import DailyTrendChart from '../components/DailyTrendChart';
 import FilterBar from '../components/FilterBar';
 import TransactionForm from '../components/TransactionForm';
 import TransactionList from '../components/TransactionList';
 import { useLedger } from '../context/LedgerContext';
+import { useStatistics } from '../hooks/useStatistics';
 import { useTransactions, type TransactionFilter } from '../hooks/useTransactions';
 import type { Transaction } from '../types';
+import { currentMonth } from '../utils/dateRange';
 
 export default function TransactionsPage() {
   const { addTransaction, updateTransaction, deleteTransaction } = useLedger();
   const [filter, setFilter] = useState<TransactionFilter>({});
   const transactions = useTransactions(filter);
   const [editing, setEditing] = useState<Transaction | null>(null);
+
+  // 차트는 필터의 월(없으면 이번 달) 기준으로 집계한다.
+  const statMonth = filter.month ?? currentMonth();
+  const stats = useStatistics(statMonth);
 
   function handleSubmit(data: Omit<Transaction, 'id'>) {
     if (editing) {
@@ -27,30 +35,43 @@ export default function TransactionsPage() {
   }
 
   return (
-    <div className="grid gap-6 md:grid-cols-[320px_1fr]">
-      <section className="flex flex-col gap-2">
-        <h2 className="text-lg font-semibold text-foreground">
-          {editing ? '거래 수정' : '거래 추가'}
-        </h2>
-        <TransactionForm
-          key={editing?.id ?? 'new'}
-          initial={editing ?? undefined}
-          onSubmit={handleSubmit}
-          onCancel={editing ? () => setEditing(null) : undefined}
-        />
-      </section>
+    <div className="flex flex-col gap-6">
+      <div className="grid gap-6 lg:grid-cols-2">
+        <section className="flex flex-col gap-2">
+          <h2 className="text-lg font-semibold text-foreground">카테고리별 지출</h2>
+          <CategoryChart data={stats.expenseByCategory} />
+        </section>
+        <section className="flex flex-col gap-2">
+          <h2 className="text-lg font-semibold text-foreground">일자별 수입·지출 추이</h2>
+          <DailyTrendChart data={stats.dailyTrend} />
+        </section>
+      </div>
 
-      <section className="flex flex-col gap-3">
-        <h2 className="text-lg font-semibold text-foreground">
-          내역 <span className="text-sm text-muted-foreground">({transactions.length}건)</span>
-        </h2>
-        <FilterBar filter={filter} onChange={setFilter} />
-        <TransactionList
-          transactions={transactions}
-          onEdit={setEditing}
-          onDelete={handleDelete}
-        />
-      </section>
+      <div className="grid gap-6 md:grid-cols-[320px_1fr]">
+        <section className="flex flex-col gap-2">
+          <h2 className="text-lg font-semibold text-foreground">
+            {editing ? '거래 수정' : '거래 추가'}
+          </h2>
+          <TransactionForm
+            key={editing?.id ?? 'new'}
+            initial={editing ?? undefined}
+            onSubmit={handleSubmit}
+            onCancel={editing ? () => setEditing(null) : undefined}
+          />
+        </section>
+
+        <section className="flex flex-col gap-3">
+          <h2 className="text-lg font-semibold text-foreground">
+            내역 <span className="text-sm text-muted-foreground">({transactions.length}건)</span>
+          </h2>
+          <FilterBar filter={filter} onChange={setFilter} />
+          <TransactionList
+            transactions={transactions}
+            onEdit={setEditing}
+            onDelete={handleDelete}
+          />
+        </section>
+      </div>
     </div>
   );
 }

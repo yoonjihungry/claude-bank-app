@@ -1,48 +1,42 @@
 import { useState } from 'react';
-import CategoryChart from '../components/CategoryChart';
-import MonthlyChart from '../components/MonthlyChart';
-import MonthNavigator from '../components/MonthNavigator';
-import SummaryCards from '../components/SummaryCards';
-import TransactionList from '../components/TransactionList';
-import { useLedger } from '../context/LedgerContext';
+import MonthlySpendingCard from '../components/MonthlySpendingCard';
+import SelectedDayPanel from '../components/SelectedDayPanel';
+import TodaySpendingCard from '../components/TodaySpendingCard';
+import TransactionCalendar from '../components/TransactionCalendar';
 import { useStatistics } from '../hooks/useStatistics';
-import { useTransactions } from '../hooks/useTransactions';
 import { currentMonth } from '../utils/dateRange';
 
 export default function DashboardPage() {
   const [month, setMonth] = useState(currentMonth());
-  const { deleteTransaction } = useLedger();
+  const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const stats = useStatistics(month);
-  const monthTx = useTransactions({ month });
+
+  // 월을 바꾸면 다른 달의 선택은 해제한다.
+  function handleMonthChange(next: string) {
+    setMonth(next);
+    setSelectedDate(null);
+  }
 
   return (
     <div className="flex flex-col gap-6">
-      <MonthNavigator month={month} onChange={setMonth} />
+      {/* 섹션 1 — 오늘의 소비 (항상 실제 오늘 기준) */}
+      <TodaySpendingCard />
 
-      <SummaryCards
-        totalIncome={stats.totalIncome}
-        totalExpense={stats.totalExpense}
-        balance={stats.balance}
+      {/* 섹션 2 — 거래 캘린더 (선택 월) */}
+      <TransactionCalendar
+        month={month}
+        onChange={handleMonthChange}
+        selectedDate={selectedDate}
+        onSelectDate={setSelectedDate}
       />
 
-      <div className="grid gap-6 lg:grid-cols-2">
-        <section className="flex flex-col gap-2">
-          <h2 className="text-lg font-semibold text-foreground">카테고리별 지출</h2>
-          <CategoryChart data={stats.expenseByCategory} />
-        </section>
-        <section className="flex flex-col gap-2">
-          <h2 className="text-lg font-semibold text-foreground">월별 수입·지출 추이</h2>
-          <MonthlyChart data={stats.monthlySeries} />
-        </section>
-      </div>
+      {/* 날짜 선택 시 그 날의 내역 */}
+      {selectedDate && (
+        <SelectedDayPanel date={selectedDate} onClose={() => setSelectedDate(null)} />
+      )}
 
-      <section className="flex flex-col gap-2">
-        <h2 className="text-lg font-semibold text-foreground">
-          이 달의 내역 <span className="text-sm text-muted-foreground">({monthTx.length}건)</span>
-        </h2>
-        {/* 대시보드에서는 조회 중심 — 수정은 거래 탭에서, 여기선 삭제만 제공 */}
-        <TransactionList transactions={monthTx} onDelete={deleteTransaction} />
-      </section>
+      {/* 섹션 3 — 이번달 소비금액 (선택 월) */}
+      <MonthlySpendingCard expense={stats.totalExpense} />
     </div>
   );
 }

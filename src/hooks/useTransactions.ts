@@ -5,6 +5,8 @@ import type { Transaction, TxType } from '../types';
 export interface TransactionFilter {
   /** 'YYYY-MM' — 해당 월의 거래만 */
   month?: string;
+  /** 'YYYY-MM-DD' — 해당 날짜의 거래만 */
+  date?: string;
   type?: TxType;
   categoryId?: string;
   minAmount?: number;
@@ -15,6 +17,7 @@ export interface TransactionFilter {
 
 function matches(tx: Transaction, filter: TransactionFilter): boolean {
   if (filter.month && !tx.date.startsWith(filter.month)) return false;
+  if (filter.date && tx.date !== filter.date) return false;
   if (filter.type && tx.type !== filter.type) return false;
   if (filter.categoryId && tx.category !== filter.categoryId) return false;
   if (filter.minAmount != null && tx.amount < filter.minAmount) return false;
@@ -31,13 +34,13 @@ export function useTransactions(filter: TransactionFilter = {}): Transaction[] {
   const { transactions } = useLedger();
   // 원시 값으로 분해해 의존성으로 사용한다.
   // 호출부가 인라인 객체(예: { month })를 넘겨도 매 렌더 재계산되지 않는다.
-  const { month, type, categoryId, minAmount, maxAmount, keyword } = filter;
+  const { month, date, type, categoryId, minAmount, maxAmount, keyword } = filter;
 
   return useMemo(() => {
     return transactions
       .filter((tx) =>
-        matches(tx, { month, type, categoryId, minAmount, maxAmount, keyword }),
+        matches(tx, { month, date, type, categoryId, minAmount, maxAmount, keyword }),
       )
       .sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : 0));
-  }, [transactions, month, type, categoryId, minAmount, maxAmount, keyword]);
+  }, [transactions, month, date, type, categoryId, minAmount, maxAmount, keyword]);
 }

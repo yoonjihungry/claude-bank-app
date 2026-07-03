@@ -1,7 +1,6 @@
 import { useMemo } from 'react';
 import { useLedger } from '../context/LedgerContext';
 import { getCategory } from '../constants/categories';
-import { lastNMonths } from '../utils/dateRange';
 
 export interface CategorySlice {
   categoryId: string;
@@ -10,10 +9,12 @@ export interface CategorySlice {
   value: number;
 }
 
-export interface MonthlyPoint {
-  month: string; // 'YYYY-MM'
-  income: number;
-  expense: number;
+export interface DailyTrendPoint {
+  date: string; // 'YYYY-MM-DD'
+  /** 그 날 순액(수입 − 지출) */
+  net: number;
+  /** 선택 월 시작부터의 누적 순액 */
+  cumulative: number;
 }
 
 export type BudgetStatus = 'ok' | 'warning' | 'over';
@@ -35,8 +36,8 @@ export interface Statistics {
   balance: number;
   /** 선택 월의 지출을 카테고리별로 집계(내림차순, 0원 제외) */
   expenseByCategory: CategorySlice[];
-  /** 선택 월을 마지막으로 하는 최근 N개월 수입/지출 추이 */
-  monthlySeries: MonthlyPoint[];
+  /** 선택 월의 거래가 있는 날짜별 순액·누적 추이(날짜 오름차순) */
+  dailyTrend: DailyTrendPoint[];
   /** 선택 월에 예산이 설정된 카테고리의 사용 현황(사용률 내림차순) */
   budgetUsage: BudgetUsage[];
 }
@@ -52,39 +53,38 @@ export function budgetStatus(ratio: number): BudgetStatus {
  * 선택 월 기준 통계를 useMemo로 파생 계산한다.
  * 집계 로직은 컴포넌트가 아닌 이 훅에 둔다.
  */
-export function useStatistics(month: string, trailingMonths = 6): Statistics {
+export function useStatistics(month: string): Statistics {
   const { transactions, budgets } = useLedger();
 
   return useMemo(() => {
     let totalIncome = 0;
     let totalExpense = 0;
     const expenseMap = new Map<string, number>();
-
-    const months = lastNMonths(month, trailingMonths);
-    const seriesMap = new Map<string, MonthlyPoint>(
-      months.map((m) => [m, { month: m, income: 0, expense: 0 }]),
-    );
+    // 선택 월의 날짜별 순액(수입 − 지출)
+    const dailyNet = new Map<string, number>();
 
     for (const tx of transactions) {
       const txMonth = tx.date.slice(0, 7);
+      if (txMonth !== month) continue;
 
-      // 최근 N개월 추이 누적
-      const point = seriesMap.get(txMonth);
-      if (point) {
-        if (tx.type === 'income') point.income += tx.amount;
-        else point.expense += tx.amount;
-      }
+      const signed = tx.type === 'income' ? tx.amount : -tx.amount;
+      dailyNet.set(tx.date, (dailyNet.get(tx.date) ?? 0) + signed);
 
-      // 선택 월 집계
-      if (txMonth === month) {
-        if (tx.type === 'income') {
-          totalIncome += tx.amount;
-        } else {
-          totalExpense += tx.amount;
-          expenseMap.set(tx.category, (expenseMap.get(tx.category) ?? 0) + tx.amount);
-        }
+      if (tx.type === 'income') {
+        totalIncome += tx.amount;
+      } else {
+        totalExpense += tx.amount;
+        expenseMap.set(tx.category, (expenseMap.get(tx.category) ?? 0) + tx.amount);
       }
     }
+
+    let running = 0;
+    const dailyTrend: DailyTrendPoint[] = [...dailyNet.entries()]
+      .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))
+      .map(([date, net]) => {
+        running += net;
+        return { date, net, cumulative: running };
+      });
 
     const expenseByCategory: CategorySlice[] = [...expenseMap.entries()]
       .map(([categoryId, value]) => {
@@ -121,8 +121,8 @@ export function useStatistics(month: string, trailingMonths = 6): Statistics {
       totalExpense,
       balance: totalIncome - totalExpense,
       expenseByCategory,
-      monthlySeries: months.map((m) => seriesMap.get(m)!),
+      dailyTrend,
       budgetUsage,
     };
-  }, [transactions, budgets, month, trailingMonths]);
+  }, [transactions, budgets, month]);
 }

@@ -36,5 +36,9 @@
   --destructive: 0 69% 61%;
   --destructive-foreground: 0 0% 100%;
 
+  /* 캘린더 주말 요일·날짜 색(관례색) — 일요일 빨강, 토요일 파랑 */
+  --weekend-sun: 0 72% 58%;
+  --weekend-sat: 213 77% 56%;
+
   --border: 214 32% 88%;
 }

@@ -2,6 +2,19 @@
 
 의미 있는 변경 사항을 "날짜 — 무엇을 바꿨는지" 형식으로 최신순으로 기록한다.
 
+## 2026-07-03 — 대시보드를 3섹션(오늘의 소비·캘린더·이번달 소비금액)으로 재구성
+
+- 참조 이미지에 맞춰 대시보드를 3개 섹션으로 재구성했다:
+  - **`TodaySpendingCard`**(섹션1) — 오늘 지출 + "어제와 비교" 증감. 월 네비게이터와 무관하게 항상 실제 오늘 기준. 서버가 없어 새로고침은 기준 시각만 갱신한다(데이터는 항상 최신).
+  - **`TransactionCalendar`**(섹션2) — 월 캘린더. "출석" 표기를 없애고, 거래가 있는 날짜 아래 dot 표시(지출 `--expense`, 수입 `--income`).
+  - **`MonthlySpendingCard`**(섹션3) — 이번달 지출 합계. 참조의 "주 사용 카드" 목록은 제외.
+- 기존 `SummaryCards`(요약 카드)는 섹션3과 중복이라 삭제했다.
+- 카테고리 파이 차트·추이 차트·최근 내역 리스트는 **거래 탭으로 이동**했다.
+- 월별 막대 `MonthlyChart`를 참조 이미지4 스타일의 **`DailyTrendChart`**(일자별 순액 막대 + 누적 순액 꺾은선, `ComposedChart`)로 대체했다. 색은 `--primary` 계열(dataviz 검증: 인접 CVD ΔE 15.4 통과).
+- 집계 훅 추가: `useDailySpending`(오늘/어제 지출·증감), `useMonthlyCalendar`(날짜별 수입/지출 유무). `useStatistics`는 `monthlySeries`(6개월)를 `dailyTrend`(선택 월 일자별 순액·누적)로 교체.
+- 캘린더 주말색용 `--weekend-sun`/`--weekend-sat` 토큰을 `tokens.css`에 추가하고 매핑했다. 대시보드 카드용 '원' 표기 헬퍼(`formatWon`/`formatSignedWon`)를 `utils/format.ts`에 추가.
+- **캘린더 날짜 클릭 → 그 날 내역 표시**: 날짜를 누르면 캘린더 아래 `SelectedDayPanel`에 해당 날짜의 수입/지출 합계와 목록(삭제 가능)이 뜬다. 같은 날짜를 다시 누르거나 '닫기'로 해제, 월 변경 시 자동 해제. `useTransactions` 필터에 `date`(정확 날짜) 옵션과 `formatDayLabel`('M월 D일 (요일)') 헬퍼를 추가했다.
+
 ## 2026-07-03 — 밝은 핀테크 비비드 팔레트로 톤 전환 (라이트 전용)
 
 - 색 톤을 "신뢰감 있고 차분한"에서 **"밝고 친근한 핀테크"**로 전환했다. `tokens.css`의 시맨틱 색을 비비드로 교체: primary/ring `#3987e5`, income `#22b479`, expense `#ef6b63`, warning `#f5b53a`, destructive `#e05656`. 포인트 컬러는 primary(밝은 블루).

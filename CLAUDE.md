@@ -38,17 +38,20 @@ claude-bank-app/
    │   ├─ format.ts            # 통화(원)·날짜 포맷팅
    │   └─ dateRange.ts         # 월 시작/끝, 기간 필터 헬퍼
    ├─ components/
-   │   ├─ TransactionForm.tsx  # 수입/지출 입력·수정 폼
-   │   ├─ TransactionList.tsx  # 거래 목록 + 삭제/수정
-   │   ├─ FilterBar.tsx        # 기간·카테고리·금액 필터
-   │   ├─ SummaryCards.tsx     # 총수입/총지출/잔액 요약 카드
-   │   ├─ CategoryChart.tsx    # 카테고리별 파이 차트 (Recharts)
-   │   ├─ MonthlyChart.tsx     # 월별 수입/지출 막대 차트 (Recharts)
-   │   ├─ BudgetPanel.tsx      # 카테고리별 예산 설정 + 초과 경고
-   │   └─ MonthNavigator.tsx   # 이전/다음 월 이동
+   │   ├─ TransactionForm.tsx      # 수입/지출 입력·수정 폼
+   │   ├─ TransactionList.tsx      # 거래 목록 + 삭제/수정
+   │   ├─ FilterBar.tsx            # 기간·카테고리·금액 필터
+   │   ├─ TodaySpendingCard.tsx    # 오늘의 소비 + 어제 대비(대시보드 섹션1)
+   │   ├─ TransactionCalendar.tsx  # 월 캘린더 + 날짜별 수입/지출 dot(섹션2)
+   │   ├─ SelectedDayPanel.tsx     # 캘린더에서 클릭한 날짜의 내역 목록
+   │   ├─ MonthlySpendingCard.tsx  # 이번달 소비금액 카드(섹션3)
+   │   ├─ CategoryChart.tsx        # 카테고리별 파이 차트 (Recharts)
+   │   ├─ DailyTrendChart.tsx      # 일자별 순액 막대+누적선 (Recharts, --primary)
+   │   ├─ BudgetPanel.tsx          # 카테고리별 예산 설정 + 초과 경고
+   │   └─ MonthNavigator.tsx       # 이전/다음 월 이동
    └─ pages/
-       ├─ DashboardPage.tsx    # 요약 카드 + 차트 + 최근 거래
-       ├─ TransactionsPage.tsx # 거래 입력·목록·필터
+       ├─ DashboardPage.tsx    # 오늘의 소비 + 캘린더 + 이번달 소비금액 (3섹션)
+       ├─ TransactionsPage.tsx # 카테고리/추이 차트 + 거래 입력·목록·필터
        └─ BudgetPage.tsx       # 예산 설정·초과 현황
 ```
 

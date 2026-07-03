@@ -77,6 +77,7 @@
 | `--expense` (+`-foreground`) | `#ef6b63` / `#ffffff` | **지출** 관련 숫자·아이콘·배지·차트 막대에만 |
 | `--warning` (+`-foreground`) | `#f5b53a` / `#241905` | 예산 사용률 **80% 이상(주의)**. 항상 라벨/퍼센트와 함께 |
 | `--destructive` (+`-foreground`) | `#e05656` / `#ffffff` | **삭제** 액션과 예산 **100% 초과**. expense와 구분되는 "위험/초과" 신호 |
+| `--weekend-sun` / `--weekend-sat` | `#e05656` / `#3886e5` | 캘린더 **주말** 요일·날짜 텍스트(일=빨강, 토=파랑). 관례색이라 별도 토큰으로 분리 |
 | `--border` | `#d7dfea` | 카드·입력창·구분선 등 경계선. 텍스트 색으로 쓰지 않음 |
 
 ### 2. income vs expense vs destructive 구분
