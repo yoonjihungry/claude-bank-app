@@ -1,6 +1,7 @@
 import TransactionList from './TransactionList';
 import { useLedger } from '../context/LedgerContext';
 import { useTransactions } from '../hooks/useTransactions';
+import { todayISO } from '../utils/dateRange';
 import { formatDayLabel, formatWon } from '../utils/format';
 
 interface Props {
@@ -25,7 +26,12 @@ export default function SelectedDayPanel({ date, onClose }: Props) {
     <section className="flex flex-col gap-3 rounded-2xl border border-border bg-card p-4 shadow-sm">
       <div className="flex items-center justify-between">
         <h2 className="font-semibold text-foreground">
-          {formatDayLabel(date)}{' '}
+          {formatDayLabel(date)}
+          {date === todayISO() && (
+            <span className="ml-1.5 rounded-full bg-primary/12 px-2 py-0.5 align-middle text-xs font-semibold text-primary">
+              오늘
+            </span>
+          )}{' '}
           <span className="text-sm font-normal text-muted-foreground">({dayTx.length}건)</span>
         </h2>
         <button

@@ -4,11 +4,12 @@ import SelectedDayPanel from '../components/SelectedDayPanel';
 import TodaySpendingCard from '../components/TodaySpendingCard';
 import TransactionCalendar from '../components/TransactionCalendar';
 import { useStatistics } from '../hooks/useStatistics';
-import { currentMonth } from '../utils/dateRange';
+import { currentMonth, todayISO } from '../utils/dateRange';
 
 export default function DashboardPage() {
   const [month, setMonth] = useState(currentMonth());
-  const [selectedDate, setSelectedDate] = useState<string | null>(null);
+  // 진입 시 오늘 날짜를 선택해 당일 수입/지출 내역이 바로 보이게 한다.
+  const [selectedDate, setSelectedDate] = useState<string | null>(todayISO());
   const stats = useStatistics(month);
 
   // 월을 바꾸면 다른 달의 선택은 해제한다.
