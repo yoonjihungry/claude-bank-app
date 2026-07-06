@@ -105,7 +105,7 @@ export default function TransactionForm({ initial, onSubmit, onCancel }: Props) 
       </div>
 
       <div className="grid grid-cols-2 gap-3">
-        <label className="flex flex-col gap-1 text-sm text-muted-foreground">
+        <label className="flex min-w-0 flex-col gap-1 text-sm text-muted-foreground">
           날짜
           <input
             type="date"
@@ -115,7 +115,7 @@ export default function TransactionForm({ initial, onSubmit, onCancel }: Props) 
             required
           />
         </label>
-        <label className="flex flex-col gap-1 text-sm text-muted-foreground">
+        <label className="flex min-w-0 flex-col gap-1 text-sm text-muted-foreground">
           카테고리
           <select
             value={category}
@@ -148,7 +148,7 @@ export default function TransactionForm({ initial, onSubmit, onCancel }: Props) 
       {type === 'expense' && (
         <div className="flex flex-col gap-1 text-sm text-muted-foreground">
           결제수단
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid grid-cols-3 gap-2 [&>button]:min-w-0">
             {PAYMENT_METHODS.map((m) => {
               const on = method === m.id;
               const isCredit = m.id === 'credit';
