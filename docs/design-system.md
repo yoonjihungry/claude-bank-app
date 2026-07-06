@@ -17,28 +17,28 @@
 ## Layout
 
 - **모바일 전용 대응**: 이 프로젝트는 모바일 레이아웃만 대응한다. 데스크톱 전용 레이아웃은 별도로 만들지 않는다.
-- **PC(넓은 화면)에서 확인할 경우**: 콘텐츠 영역은 `max-width: 600px`로 제한하고 중앙 정렬한다. (넓은 화면에서도 모바일 폭을 넘어가지 않도록)
+- **콘텐츠 폭 규칙**: 콘텐츠 영역은 중앙 정렬하며, **모바일(≤768px) 480px / PC(≥768px) 600px**로 상한을 둔다. (넓은 화면에서도 모바일 폭을 크게 넘지 않도록)
 - **Breakpoints**
-  - 기준 브레이크포인트는 모바일 하나만 둔다.
-  - `768px` 이상 화면에서는 콘텐츠를 `max-width: 360px`로 제한한다 (모바일 화면 폭을 시뮬레이션).
+  - 기준 브레이크포인트는 모바일 하나(`768px`)만 둔다.
+  - 기본(모바일)은 `max-width: 480px`, `768px` 이상에서 `max-width: 600px`로 넓힌다.
 
 ```css
 /* 예시 */
 .content-container {
   width: 100%;
-  max-width: 600px; /* PC 확인 시 상한 */
+  max-width: 480px; /* 모바일 상한 */
   margin-inline: auto;
 }
 
 @media (min-width: 768px) {
   .content-container {
-    max-width: 360px; /* 768px 이상에서는 더 좁게 */
+    max-width: 600px; /* PC 확인 시 상한 */
   }
 }
 ```
 
-> Tailwind 사용 시: `max-w-[600px]` / `md:max-w-[360px]` 형태로 구현한다. 반복 사용되는 값이라면
-> `index.css`의 `@theme`에 `--content-width-base: 600px`, `--content-width-md: 360px` 형태로 등록해
+> Tailwind 사용 시: `max-w-[480px]` / `md:max-w-[600px]` 형태로 구현한다. 반복 사용되는 값이라면
+> `index.css`의 `@theme`에 `--content-width-base: 480px`, `--content-width-md: 600px` 형태로 등록해
 > 재사용한다. (이 프로젝트는 Tailwind v4라 `tailwind.config.js`가 없다 — 설정은 CSS의 `@theme`으로만 한다.)
 
 ---
