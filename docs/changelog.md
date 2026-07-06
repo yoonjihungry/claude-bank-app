@@ -2,6 +2,15 @@
 
 의미 있는 변경 사항을 "날짜 — 무엇을 바꿨는지" 형식으로 최신순으로 기록한다.
 
+## 2026-07-06 — 지출 결제수단·신용카드 할부 + 대시보드 카드 청구 예정
+
+- **지출 결제수단(현금/체크/신용) 추가**: `Transaction.method?`(선택적), `constants/paymentMethods.ts`(옵션·뱃지·기본값=현금). 입력 폼은 지출일 때만 세그먼트 노출, 거래 목록에 뱃지 표시. 신용카드 강조용 `--credit` 토큰을 `tokens.css`에 추가(하드코딩 없이 토큰만).
+- **신용카드 할부(일시불~24개월)**: `Transaction.installmentMonths?`, `constants/installments.ts`(옵션 목록 + 원금 균등분할 `installmentAmount`, 나머지는 1회차에 몰아 합계 일치). 신용카드일 때만 할부 드롭다운 노출, 매달 청구액 미리보기.
+- **대시보드 카드 청구 예정 카드(`CreditBillingCard`) 신설**: 이번 달 실제 청구액을 집계한다. 다른 달에 산 할부도 이번 달 회차분(예: `3/7`)만 합산하고, 항목별로 회차/일시불 뱃지와 **메모**를 함께 보여 어떤 지출인지 구분한다.
+- **`useStatistics` 확장**: `creditCardTotal`(구매월 기준 신용카드 합계), `creditBillingTotal`·`creditBillingItems`(청구월 기준). `MonthlySpendingCard`는 소비금액을 현금·체크 / 신용카드로 분해 표시.
+- **콘텐츠 폭 규칙 정정**: 기존 `max-w-5xl`(1024px)/뒤집혀 있던 규칙을 **모바일 360px / PC(≥768px) 600px**로 바로잡아 `App.tsx` 헤더·본문·하단 탭바에 공통 적용.
+- **거래 페이지**: 상단 그래프 2개(카테고리·추이) 임시 숨김, 좁은 폭에서 목록 레이아웃 정리(카테고리명 말줄임, 금액·버튼 세로 스택). **금액 입력에 천단위 콤마 표시**(저장은 숫자만, 표시는 콤마).
+
 ## 2026-07-03 — 카테고리 추가/수정/삭제 기능 (예산 페이지)
 
 - 카테고리를 상수에서 **편집 가능한 영속 상태로 승격**했다. `repository`에 `getCategories/saveCategories`(키 `bankapp.categories`, 최초 실행 시 `DEFAULT_CATEGORIES`로 시드), `LedgerContext`에 `ADD/UPDATE/DELETE_CATEGORY` 액션과 저장 구독을 추가했다.
