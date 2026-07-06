@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { LedgerProvider } from './context/LedgerContext';
-import BudgetPage from './pages/BudgetPage';
-import DashboardPage from './pages/DashboardPage';
-import TransactionsPage from './pages/TransactionsPage';
+import BudgetPage from './screens/BudgetPage';
+import DashboardPage from './screens/DashboardPage';
+import TransactionsPage from './screens/TransactionsPage';
 
 type Tab = 'dashboard' | 'transactions' | 'budget';
 
