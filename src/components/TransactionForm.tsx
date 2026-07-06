@@ -111,7 +111,9 @@ export default function TransactionForm({ initial, onSubmit, onCancel }: Props) 
             type="date"
             value={date}
             onChange={(e) => setDate(e.target.value)}
-            className={inputClass}
+            // iOS Safari: 네이티브 date는 appearance를 끄지 않으면 width/min-width를
+            // 무시하고 고유 너비로 넘쳐 옆 칸을 덮는다. appearance-none으로 폭 제약을 따르게 함.
+            className={`${inputClass} appearance-none [-webkit-appearance:none]`}
             required
           />
         </label>
