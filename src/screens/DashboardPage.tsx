@@ -1,3 +1,5 @@
+'use client';
+
 import { useState } from 'react';
 import CreditBillingCard from '../components/CreditBillingCard';
 import MonthlySpendingCard from '../components/MonthlySpendingCard';

@@ -1,3 +1,5 @@
+'use client';
+
 import { useLedger } from '../context/LedgerContext';
 import { useCategories } from '../hooks/useCategories';
 import { budgetStatus, useStatistics, type BudgetStatus } from '../hooks/useStatistics';

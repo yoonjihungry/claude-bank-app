@@ -1,3 +1,5 @@
+'use client';
+
 import { useState } from 'react';
 import CategoryChart from '../components/CategoryChart';
 import DailyTrendChart from '../components/DailyTrendChart';

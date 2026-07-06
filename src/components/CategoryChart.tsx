@@ -1,3 +1,5 @@
+'use client';
+
 import { Cell, Legend, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts';
 import type { CategorySlice } from '../hooks/useStatistics';
 import { formatCurrency } from '../utils/format';

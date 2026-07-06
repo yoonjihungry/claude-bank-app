@@ -1,3 +1,5 @@
+'use client';
+
 import { paymentMethodMeta } from '../constants/paymentMethods';
 import { useCategories } from '../hooks/useCategories';
 import type { Transaction } from '../types';

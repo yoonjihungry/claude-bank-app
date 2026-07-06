@@ -1,3 +1,5 @@
+'use client';
+
 import { useEffect, useState } from 'react';
 import { CATEGORY_PALETTE } from '../constants/categories';
 import { useLedger } from '../context/LedgerContext';

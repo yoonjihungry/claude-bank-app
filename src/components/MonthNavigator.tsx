@@ -1,3 +1,5 @@
+'use client';
+
 import { shiftMonth } from '../utils/dateRange';
 import { formatMonthLabel } from '../utils/format';
 
