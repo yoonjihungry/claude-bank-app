@@ -1,7 +1,10 @@
 import { useState, type FormEvent } from 'react';
 import { format } from 'date-fns';
+import { INSTALLMENT_MONTHS } from '../constants/installments';
+import { DEFAULT_PAYMENT_METHOD, PAYMENT_METHODS } from '../constants/paymentMethods';
 import { useCategories } from '../hooks/useCategories';
-import type { Transaction, TxType } from '../types';
+import { formatWon } from '../utils/format';
+import type { PaymentMethod, Transaction, TxType } from '../types';
 
 interface Props {
   /** 수정 모드일 때 초기값. 없으면 신규 입력. */
@@ -21,6 +24,13 @@ export default function TransactionForm({ initial, onSubmit, onCancel }: Props) 
   );
   const [date, setDate] = useState(initial?.date ?? today());
   const [memo, setMemo] = useState(initial?.memo ?? '');
+  const [method, setMethod] = useState<PaymentMethod>(
+    initial?.method ?? DEFAULT_PAYMENT_METHOD,
+  );
+  // 할부 개월수(1 = 일시불). 신용카드에서만 의미가 있다.
+  const [installmentMonths, setInstallmentMonths] = useState(
+    initial?.installmentMonths ?? 1,
+  );
   const [error, setError] = useState('');
 
   const isEdit = initial != null;
@@ -38,6 +48,8 @@ export default function TransactionForm({ initial, onSubmit, onCancel }: Props) 
     setCategory(byType('expense')[0]?.id ?? '');
     setDate(today());
     setMemo('');
+    setMethod(DEFAULT_PAYMENT_METHOD);
+    setInstallmentMonths(1);
     setError('');
   }
 
@@ -54,6 +66,13 @@ export default function TransactionForm({ initial, onSubmit, onCancel }: Props) 
       category,
       date,
       memo: memo.trim() || undefined,
+      // 결제수단은 지출에만 저장한다.
+      method: type === 'expense' ? method : undefined,
+      // 할부는 신용카드 지출에서 2개월 이상일 때만 저장한다.
+      installmentMonths:
+        type === 'expense' && method === 'credit' && installmentMonths >= 2
+          ? installmentMonths
+          : undefined,
     });
     if (!isEdit) reset();
   }
@@ -115,17 +134,68 @@ export default function TransactionForm({ initial, onSubmit, onCancel }: Props) 
       <label className="flex flex-col gap-1 text-sm text-muted-foreground">
         금액 (원)
         <input
-          type="number"
+          type="text"
           inputMode="numeric"
-          min="0"
-          step="1"
-          value={amount}
-          onChange={(e) => setAmount(e.target.value)}
+          // 저장은 숫자만, 표시는 천단위 콤마. (type=number는 콤마 표기가 불가)
+          value={amount === '' ? '' : Number(amount).toLocaleString('ko-KR')}
+          onChange={(e) => setAmount(e.target.value.replace(/[^\d]/g, ''))}
           placeholder="0"
           className={inputClass}
           required
         />
       </label>
+
+      {type === 'expense' && (
+        <div className="flex flex-col gap-1 text-sm text-muted-foreground">
+          결제수단
+          <div className="grid grid-cols-3 gap-2">
+            {PAYMENT_METHODS.map((m) => {
+              const on = method === m.id;
+              const isCredit = m.id === 'credit';
+              return (
+                <button
+                  key={m.id}
+                  type="button"
+                  onClick={() => setMethod(m.id)}
+                  aria-pressed={on}
+                  className={`rounded-md border px-3 py-2 text-sm font-medium transition ${
+                    on
+                      ? isCredit
+                        ? 'border-credit bg-credit/10 text-credit'
+                        : 'border-primary bg-primary/10 text-primary'
+                      : 'border-input text-muted-foreground hover:bg-muted'
+                  }`}
+                >
+                  {m.label}
+                </button>
+              );
+            })}
+          </div>
+          {method === 'credit' && (
+            <div className="mt-1 flex flex-col gap-1">
+              <span className="text-sm">할부</span>
+              <select
+                value={installmentMonths}
+                onChange={(e) => setInstallmentMonths(Number(e.target.value))}
+                className={inputClass}
+              >
+                <option value={1}>일시불</option>
+                {INSTALLMENT_MONTHS.map((m) => (
+                  <option key={m} value={m}>
+                    {m}개월
+                  </option>
+                ))}
+              </select>
+              {installmentMonths >= 2 && Number(amount) > 0 && (
+                <p className="text-xs text-muted-foreground">
+                  매달 약 {formatWon(Math.floor(Number(amount) / installmentMonths))}씩{' '}
+                  {installmentMonths}회 청구 (1/{installmentMonths} · 2/{installmentMonths} …)
+                </p>
+              )}
+            </div>
+          )}
+        </div>
+      )}
 
       <label className="flex flex-col gap-1 text-sm text-muted-foreground">
         메모 (선택)

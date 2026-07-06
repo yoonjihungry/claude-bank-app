@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import CreditBillingCard from '../components/CreditBillingCard';
 import MonthlySpendingCard from '../components/MonthlySpendingCard';
 import SelectedDayPanel from '../components/SelectedDayPanel';
 import TodaySpendingCard from '../components/TodaySpendingCard';
@@ -36,8 +37,11 @@ export default function DashboardPage() {
         <SelectedDayPanel date={selectedDate} onClose={() => setSelectedDate(null)} />
       )}
 
-      {/* 섹션 3 — 이번달 소비금액 (선택 월) */}
-      <MonthlySpendingCard expense={stats.totalExpense} />
+      {/* 섹션 3 — 이번달 소비금액 (선택 월, 구매 기준 전액) */}
+      <MonthlySpendingCard expense={stats.totalExpense} creditCard={stats.creditCardTotal} />
+
+      {/* 섹션 4 — 이번 달 카드 청구 예정 (할부 회차분 반영) */}
+      <CreditBillingCard total={stats.creditBillingTotal} items={stats.creditBillingItems} />
     </div>
   );
 }

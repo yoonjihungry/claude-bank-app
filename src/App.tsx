@@ -6,8 +6,8 @@ import TransactionsPage from './pages/TransactionsPage';
 
 type Tab = 'dashboard' | 'transactions' | 'budget';
 
-/** 콘텐츠 폭 규칙(docs/design-system.md): 기본 600px, 768px 이상 360px, 중앙 정렬 */
-const CONTENT = 'mx-auto w-full max-w-[600px] md:max-w-[360px]';
+/** 콘텐츠 폭 규칙(docs/design-system.md): 모바일(≤768px) 360px, PC(≥768px) 600px, 중앙 정렬 */
+const CONTENT = 'mx-auto w-full max-w-[360px] md:max-w-[600px]';
 
 const TABS: { id: Tab; label: string }[] = [
   { id: 'dashboard', label: '홈' },

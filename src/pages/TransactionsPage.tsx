@@ -36,18 +36,21 @@ export default function TransactionsPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="grid gap-6 lg:grid-cols-2">
-        <section className="flex flex-col gap-2">
-          <h2 className="text-lg font-semibold text-foreground">카테고리별 지출</h2>
-          <CategoryChart data={stats.expenseByCategory} />
-        </section>
-        <section className="flex flex-col gap-2">
-          <h2 className="text-lg font-semibold text-foreground">일자별 수입·지출 추이</h2>
-          <DailyTrendChart data={stats.dailyTrend} />
-        </section>
-      </div>
+      {/* 상단 그래프 2개 임시 숨김 처리 (추후 복구) */}
+      {false && (
+        <div className="grid gap-6 lg:grid-cols-2">
+          <section className="flex flex-col gap-2">
+            <h2 className="text-lg font-semibold text-foreground">카테고리별 지출</h2>
+            <CategoryChart data={stats.expenseByCategory} />
+          </section>
+          <section className="flex flex-col gap-2">
+            <h2 className="text-lg font-semibold text-foreground">일자별 수입·지출 추이</h2>
+            <DailyTrendChart data={stats.dailyTrend} />
+          </section>
+        </div>
+      )}
 
-      <div className="grid gap-6 md:grid-cols-[320px_1fr]">
+      <div className="flex flex-col gap-6">
         <section className="flex flex-col gap-2">
           <h2 className="text-lg font-semibold text-foreground">
             {editing ? '거래 수정' : '거래 추가'}
