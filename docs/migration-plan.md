@@ -31,39 +31,38 @@
 
 ---
 
-## Phase 0. 준비
+## Phase 0. 준비 ✅
 
-- [ ] 현재 상태를 백업 포인트로 커밋/태그 (예: `v0.1-vite-final`)
-- [ ] 마이그레이션용 브랜치 생성 (`feat/migrate-to-nextjs`)
-- [ ] Next.js 버전은 최신 안정(App Router 기준)으로 결정
+- [x] 현재 상태를 백업 포인트로 커밋/태그 (`v0.1-vite-final`)
+- [x] 마이그레이션용 브랜치 생성 (`feat/migrate-to-nextjs`)
+- [x] Next.js 버전은 최신 안정(App Router 기준)으로 결정 → Next.js 16
 
-## Phase 1. Next.js 프로젝트 골격
+## Phase 1. Next.js 프로젝트 골격 ✅
 
-- [ ] Next.js 프로젝트 초기화 (TypeScript, Tailwind, App Router, `src/` 폴더 옵션 선택)
-- [ ] 기존 `package.json`의 의존성 이관
+- [x] Next.js 프로젝트 초기화 (TypeScript, Tailwind, App Router, `src/` 폴더 옵션 선택)
+- [x] 기존 `package.json`의 의존성 이관
   - `recharts`, `date-fns`, `uuid`, `pretendard-gov` 등
-- [ ] `@tailwindcss/vite` 제거, `@tailwindcss/postcss`로 교체
+- [x] `@tailwindcss/vite` 제거, `@tailwindcss/postcss`로 교체
 
-## Phase 2. 스타일 시스템 이관
+## Phase 2. 스타일 시스템 이관 ✅
 
-- [ ] `src/styles/tokens.css`, `src/styles/index.css` 그대로 이관
-- [ ] `app/layout.tsx`에서 글로벌 CSS import
-- [ ] Pretendard GOV 폰트 로딩 방식 확인
-  - Next.js `next/font`로 대체할지, 기존 CSS import 유지할지 결정
-- [ ] `@theme`의 `--content-width-base`, `--content-width-md` 등 그대로 유지
+- [x] `src/styles/tokens.css`, `src/styles/index.css` 그대로 이관
+- [x] `app/layout.tsx`에서 글로벌 CSS import
+- [x] Pretendard GOV 폰트 로딩 방식 확인 → 기존 CSS import 유지 + `font-sans` 명시 적용
+- [x] `@theme`의 `--content-width-base`, `--content-width-md` 등 그대로 유지
 
-## Phase 3. 코드 이관 (컴포넌트/훅/유틸)
+## Phase 3. 코드 이관 (컴포넌트/훅/유틸) ✅
 
-- [ ] `src/types/`, `src/utils/`, `src/hooks/`, `src/constants/` → 그대로 복사
+- [x] `src/types/`, `src/utils/`, `src/hooks/`, `src/constants/` → 그대로 복사
   - 경로 alias(`@/`) 설정 반영
-- [ ] `src/components/` → 그대로 이관
+- [x] `src/components/` → 그대로 이관
   - 상태/이벤트 쓰는 컴포넌트 상단에 `'use client'` 지시자 추가
-- [ ] `LedgerContext`도 클라이언트 컴포넌트로 (`'use client'`)
-- [ ] `storage/repository.ts`는 일단 **localStorage 구현 그대로 유지** (Phase 6에서 교체)
+- [x] `LedgerContext`도 클라이언트 컴포넌트로 (`'use client'`)
+- [x] `storage/repository.ts`는 일단 **localStorage 구현 그대로 유지** (Phase 8에서 교체)
 
-## Phase 4. 라우팅 전환
+## Phase 4. 라우팅 전환 ✅
 
-- [ ] `App.tsx`의 탭 방식 라우팅 → Next.js `app/` 폴더 구조로
+- [x] `App.tsx`의 탭 방식 라우팅 → Next.js `app/` 폴더 구조로
 
 ```
 app/
@@ -75,51 +74,45 @@ app/
     page.tsx              # 기존 BudgetPage
 ```
 
-- [ ] 하단 탭 메뉴에서 `next/link` + `usePathname()`으로 활성 상태 관리
-- [ ] `MonthNavigator`나 필터 등 페이지 간 공유 상태는 Context 유지
+- [x] 하단 탭 메뉴에서 `next/link` + `usePathname()`으로 활성 상태 관리
+- [x] `MonthNavigator`나 필터 등 페이지 간 공유 상태는 Context 유지
 
-## Phase 5. Vercel 배포 확인 (여기까지가 "동작은 동일, 프레임워크만 교체")
+## Phase 5. Vercel 배포 확인 (여기까지가 "동작은 동일, 프레임워크만 교체") ✅
 
-- [ ] GitHub push → Vercel 자동 빌드 확인
-- [ ] Framework Preset이 Next.js로 자동 감지되는지 확인
-- [ ] 기존 도메인에서 동일하게 동작하는지 확인
+- [x] GitHub push → Vercel 자동 빌드 확인
+- [x] Framework Preset이 Next.js로 자동 감지되는지 확인
+- [x] 프리뷰 도메인에서 동일하게 동작하는지 확인
 - [ ] 이 시점에 한 번 커밋/머지 (마이그레이션 완료 vs 백엔드 연동은 별개 단계)
+  - → 머지는 Phase 8~9까지 끝낸 뒤로 미룸(main은 Vite 유지). 프리뷰 배포로 검증 중.
 
 ---
 
-## Phase 6. DB 연동 (Vercel Postgres)
+## Phase 6. DB 연동 (Vercel Postgres) ✅
 
-- [ ] Vercel 대시보드 → Storage → Postgres 생성
-  - 환경변수(`POSTGRES_URL` 등) 자동 주입 확인
-  - 로컬 개발용으로 `.env.local`에 복사
-- [ ] ORM 선택: **Prisma** 또는 **Drizzle**
-  - 판단 기준: 러닝 커브(Prisma가 편함) vs 번들 크기/성능(Drizzle이 가벼움)
-  - 개인용 프로젝트라면 **Prisma 추천**
-- [ ] 스키마 정의 — 기존 `types/index.ts`와 매핑
-  - `User` (NextAuth용)
+- [x] Vercel(Neon) Postgres 생성
+  - 연결 문자열을 로컬 `.env.local`에 복사(`DATABASE_URL` 풀링 / `DATABASE_URL_UNPOOLED` 논풀링)
+- [x] ORM 선택: **Prisma** (Prisma 7 `prisma-client` 제너레이터 + PrismaPg 드라이버 어댑터)
+  - 선택 이유는 `decisions.md` 2026-07-07 항목 참조
+- [x] 스키마 정의 — 기존 `types/index.ts`와 매핑
+  - `User` + NextAuth용 `Account` / `Session` / `VerificationToken`
   - `Transaction` (`id, type, amount, categoryId, date, memo, userId`)
   - `Category` (`id, name, type, color, userId`)
   - `Budget` (`categoryId, month, limit, userId`)
-- [ ] 마이그레이션 실행, DB 스키마 생성
+- [x] 마이그레이션 실행, DB 스키마 생성
 
-## Phase 7. 인증 (NextAuth.js)
+## Phase 7. 인증 (NextAuth.js / Auth.js v5) ✅
 
-- [ ] NextAuth.js 설치 및 세팅 (`app/api/auth/[...nextauth]/route.ts`)
-- [ ] Provider 선택: **Google 로그인** (가장 간단, 계정 별도 관리 안 해도 됨)
-  - Google Cloud Console에서 OAuth Client 발급 → `GOOGLE_CLIENT_ID/SECRET`
-- [ ] 환경변수 세팅
-  - `NEXTAUTH_SECRET` (터미널에서 `openssl rand -base64 32`)
-  - `NEXTAUTH_URL` (배포 도메인)
-  - `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`
-- [ ] Vercel 대시보드에서 위 환경변수 등록 → 재배포
-- [ ] `AuthContext` 또는 NextAuth의 `useSession` 훅으로 로그인 상태 관리
-- [ ] 헤더의 로그인 버튼과 연결
-  - 비로그인: "로그인" 버튼 → Google 로그인 모달
+- [x] Auth.js v5(next-auth@beta) + `@auth/prisma-adapter` 설치·세팅 (`app/api/auth/[...nextauth]/route.ts`, `lib/auth.ts` 중앙 설정, DB 세션 전략)
+- [x] Provider 선택: **Google 로그인**
+  - Google Cloud Console에서 OAuth Client 발급 → `AUTH_GOOGLE_ID/SECRET`
+- [x] 환경변수 세팅 (Auth.js v5 이름 규칙 — `NEXTAUTH_*` 아님)
+  - `AUTH_SECRET`, `AUTH_GOOGLE_ID`, `AUTH_GOOGLE_SECRET` (배포 도메인은 Vercel에서 자동 감지)
+- [x] Vercel Preview 환경에 위 환경변수 등록 → 재배포 (⚠️ Production 등록은 머지 전 별도로)
+- [x] NextAuth의 `useSession` 훅으로 로그인 상태 관리 (`AuthProvider` = SessionProvider 경계)
+- [x] 헤더의 로그인 버튼과 연결 (`HeaderAuth`)
+  - 비로그인: "로그인" 버튼 → **안내 바텀시트**(`LoginSheet`) → 시트 내 버튼에서 Google 로그인
   - 로그인: 아바타/이메일 표시 + 로그아웃 옵션
-- [ ] 로그인 게이팅 정책 결정
-  - **후보 A**: 로그인 필수 (게이트 화면)
-  - **후보 B**: 비로그인은 localStorage로 계속 쓸 수 있고, 로그인하면 서버 동기화 시작
-  - 결정되면 `decisions.md`에 기록
+- [x] 로그인 게이팅 정책 결정 → **B (비로그인 병행)**. `decisions.md` 2026-07-07 항목에 기록
 
 ## Phase 8. 저장소 교체 (localStorage → API)
 
