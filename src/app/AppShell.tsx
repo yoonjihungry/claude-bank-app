@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState, type ReactNode } from 'react';
 import { LedgerProvider } from '@/context/LedgerContext';
+import HeaderAuth from '@/components/HeaderAuth';
 
 /** 콘텐츠 폭 규칙(docs/design-system.md): 모바일 480px, PC(≥768px) 600px, 중앙 정렬 */
 const CONTENT = 'mx-auto w-full max-w-[480px] md:max-w-[600px]';
@@ -27,16 +28,11 @@ export default function AppShell({ children }: { children: ReactNode }) {
   return (
     <LedgerProvider>
       <div className="min-h-screen bg-background text-foreground">
-        {/* 헤더 — 좌측 로고 + 우측 로그인 버튼(기능은 대기 중, UI만) */}
+        {/* 헤더 — 좌측 로고 + 우측 로그인/계정 영역(HeaderAuth) */}
         <header className="border-b border-border bg-card">
           <div className={`${CONTENT} flex items-center justify-between px-4 py-4`}>
             <h1 className="text-xl font-bold">💰 가계부</h1>
-            <button
-              type="button"
-              className="rounded-md border border-input px-3 py-1.5 text-sm font-medium text-muted-foreground transition hover:bg-muted"
-            >
-              로그인
-            </button>
+            <HeaderAuth />
           </div>
         </header>
 
