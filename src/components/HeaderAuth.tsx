@@ -2,12 +2,14 @@
 
 // 헤더 우측 로그인 영역. 비로그인이면 "로그인" 버튼(Google), 로그인이면 아바타 + 로그아웃.
 // 게이팅 정책 B이므로 로그인 없이도 앱은 그대로 동작한다(이 버튼은 선택적 진입점).
-import { signIn, signOut, useSession } from 'next-auth/react';
+import { signOut, useSession } from 'next-auth/react';
 import { useState } from 'react';
+import LoginSheet from '@/components/LoginSheet';
 
 export default function HeaderAuth() {
   const { data: session, status } = useSession();
   const [open, setOpen] = useState(false);
+  const [sheetOpen, setSheetOpen] = useState(false);
 
   if (status === 'loading') {
     // 세션 확인 중 — 버튼 자리만 유지(레이아웃 흔들림 방지)
@@ -15,14 +17,18 @@ export default function HeaderAuth() {
   }
 
   if (!session?.user) {
+    // 클릭 시 바로 구글로 튕기지 않고 안내 바텀시트를 먼저 연다(정책 B).
     return (
-      <button
-        type="button"
-        onClick={() => signIn('google')}
-        className="rounded-md border border-input px-3 py-1.5 text-sm font-medium text-muted-foreground transition hover:bg-muted"
-      >
-        로그인
-      </button>
+      <>
+        <button
+          type="button"
+          onClick={() => setSheetOpen(true)}
+          className="rounded-md border border-input px-3 py-1.5 text-sm font-medium text-muted-foreground transition hover:bg-muted"
+        >
+          로그인
+        </button>
+        <LoginSheet open={sheetOpen} onClose={() => setSheetOpen(false)} />
+      </>
     );
   }
 
