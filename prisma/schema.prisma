@@ -1,0 +1,131 @@
+// Prisma schema — 가계부 도메인 + NextAuth(Phase 7) 모델
+// 참고: 도메인 타입 원본은 src/types/index.ts
+// docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ─────────────────────────────────────────────
+// NextAuth (Phase 7에서 사용) — 지금 함께 정의해 마이그레이션 1회로 끝낸다
+// ─────────────────────────────────────────────
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+  createdAt     DateTime  @default(now())
+
+  accounts     Account[]
+  sessions     Session[]
+  transactions Transaction[]
+  categories   Category[]
+  budgets      Budget[]
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// ─────────────────────────────────────────────
+// 가계부 도메인 (src/types/index.ts 매핑)
+// ─────────────────────────────────────────────
+
+enum TxType {
+  income
+  expense
+}
+
+/// 결제수단 — 지출에만 사용. null = 미지정
+enum PaymentMethod {
+  cash
+  check
+  credit
+}
+
+model Category {
+  id     String @id @default(cuid())
+  name   String
+  type   TxType
+  color  String
+  userId String
+
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions Transaction[]
+  budgets      Budget[]
+
+  @@index([userId])
+}
+
+model Transaction {
+  id                String         @id @default(cuid())
+  type              TxType
+  amount            Int // 원 단위 정수
+  categoryId        String
+  date              String // ISO 'YYYY-MM-DD' — 기존 localStorage 데이터와 동일 포맷 유지
+  memo              String?
+  method            PaymentMethod? // 지출 전용, null = 미지정
+  installmentMonths Int? // 신용카드 할부 개월수(2 이상), null = 일시불
+  userId            String
+  createdAt         DateTime       @default(now())
+
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category Category @relation(fields: [categoryId], references: [id])
+
+  @@index([userId])
+  @@index([categoryId])
+}
+
+model Budget {
+  id         String @id @default(cuid())
+  categoryId String
+  month      String // 'YYYY-MM'
+  limit      Int
+  userId     String
+
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  // 사용자·카테고리·월 조합은 유일(기존 데이터 모델의 사실상 복합키)
+  @@unique([userId, categoryId, month])
+  @@index([userId])
+}
