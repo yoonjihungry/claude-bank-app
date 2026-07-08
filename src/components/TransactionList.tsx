@@ -60,6 +60,11 @@ export default function TransactionList({ transactions, onEdit, onDelete }: Prop
                     할부 {tx.installmentMonths}개월
                   </span>
                 )}
+                {tx.recurringId && (
+                  <span className="rounded-full bg-primary/10 px-1.5 py-0.5 text-[11px] font-semibold text-primary">
+                    고정
+                  </span>
+                )}
               </div>
               {tx.memo && (
                 <p className="truncate text-sm text-muted-foreground">{tx.memo}</p>

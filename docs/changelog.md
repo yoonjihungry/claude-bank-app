@@ -2,6 +2,15 @@
 
 의미 있는 변경 사항을 "날짜 — 무엇을 바꿨는지" 형식으로 최신순으로 기록한다.
 
+## 2026-07-08 — 고정지출/반복거래 + 커스텀 색상 선택기
+
+로그인/DB(Phase 8)는 미룬 채, 현재 localStorage 기반 앱에 실용 기능을 보완했다.
+
+- **고정지출/반복거래(매월)**: `RecurringRule` 타입(카테고리·금액·결제수단·매달 며칠·시작월·활성·`generatedMonths`)과 `Transaction.recurringId?`를 추가. `repository`에 `getRecurringRules/saveRecurringRules`(키 `bankapp.recurringRules`), `LedgerContext`에 `ADD/UPDATE/DELETE_RULE`·`RUN_RECURRING` 액션과 저장 구독을 추가했다. 앱을 열 때(마운트 1회) 각 활성 규칙의 시작월~이번 달 중 미생성 달의 거래를 자동 생성한다. 거래 id를 `규칙id__YYYY-MM` 결정적 값으로 만들고 `generatedMonths`에 기록해 **중복 생성을 막고, 자동 생성분을 지워도 되살아나지 않게** 했다(멱등). 조회/CRUD는 `hooks/useRecurring`으로 일원화.
+- **등록 진입은 거래 입력 폼의 '매달 반복' 체크박스**: 신규 입력에서만 노출. 체크 시 그 거래를 이번 달치로 두고(해당 월을 `generatedMonths`에 시드) 다음 달부터 자동 생성되는 규칙을 함께 만든다. 거래 목록에는 자동 생성분에 **'고정' 뱃지**를 표시.
+- **관리(수정·해지)는 카테고리 페이지 하단 '고정거래 관리 (N건)' 접힘 섹션**(`RecurringPanel`/`RecurringModal`): 자주 안 건드리는 설정성 항목이라 기본 접힘. 펼치면 목록·on/off 토글·삭제 + 직접 추가. 규칙 삭제 시 이미 생성된 과거 거래는 남긴다.
+- **커스텀 색상 선택기(CategoryModal)**: OS 기본 `input[type=color]` 팝업을 걷어내고 **앱 내 색상 선택기 패널**(채도/명도 박스 + 색조 슬라이더 + RGB/HEX, 우상단 ✓로 확정)로 교체했다. 고른 색은 팔레트에 **새 스와치로 추가·선택**되고, 이미 카테고리가 쓰는 색은 다음에도 스와치로 노출된다(팔레트 = 기본색 ∪ 사용 중인 색 ∪ 이번에 추가한 색). HSV↔RGB↔HEX 변환은 `utils/color.ts` 신설.
+
 ## 2026-07-07 — 로그인 진입 UX: 안내 바텀시트
 
 - 헤더 "로그인" 클릭이 곧바로 구글로 리다이렉트되던 것을, 먼저 **안내 바텀시트**(`components/LoginSheet.tsx` 신설)를 여는 방식으로 바꿨다. 시트 안의 "Google로 계속하기"를 눌렀을 때만 `signIn('google')`이 실행된다.
