@@ -1,5 +1,5 @@
 import { DEFAULT_CATEGORIES } from '../constants/categories';
-import type { Budget, Category, Transaction } from '../types';
+import type { Budget, Category, RecurringRule, Transaction } from '../types';
 
 /**
  * localStorage 접근을 캡슐화하는 저장소 계층.
@@ -12,6 +12,7 @@ const KEYS = {
   transactions: 'bankapp.transactions',
   budgets: 'bankapp.budgets',
   categories: 'bankapp.categories',
+  recurringRules: 'bankapp.recurringRules',
 } as const;
 
 function read<T>(key: string, fallback: T): T {
@@ -56,4 +57,12 @@ export function getCategories(): Category[] {
 
 export function saveCategories(categories: Category[]): void {
   write(KEYS.categories, categories);
+}
+
+export function getRecurringRules(): RecurringRule[] {
+  return read<RecurringRule[]>(KEYS.recurringRules, []);
+}
+
+export function saveRecurringRules(rules: RecurringRule[]): void {
+  write(KEYS.recurringRules, rules);
 }

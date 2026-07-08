@@ -37,6 +37,18 @@ export function firstWeekday(month: string): number {
   return getDay(parseISO(`${month}-01`));
 }
 
+/**
+ * 'YYYY-MM'의 day일에 해당하는 ISO 'YYYY-MM-DD'를 반환한다.
+ * day가 그 달의 일수를 넘으면 말일로, 1 미만이면 1일로 보정한다.
+ * 예: dateInMonth('2026-02', 31) => '2026-02-28'
+ */
+export function dateInMonth(month: string, day: number): string {
+  const first = parseISO(`${month}-01`);
+  const dim = getDaysInMonth(first);
+  const d = Math.min(Math.max(1, Math.floor(day)), dim);
+  return `${month}-${String(d).padStart(2, '0')}`;
+}
+
 /** 'YYYY-MM'에 delta개월을 더한(또는 뺀) 월을 반환한다. */
 export function shiftMonth(month: string, delta: number): string {
   return format(addMonths(parseISO(`${month}-01`), delta), 'yyyy-MM');

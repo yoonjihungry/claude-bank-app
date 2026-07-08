@@ -1,3 +1,5 @@
+'use client';
+
 import TransactionList from './TransactionList';
 import { useLedger } from '../context/LedgerContext';
 import { useTransactions } from '../hooks/useTransactions';

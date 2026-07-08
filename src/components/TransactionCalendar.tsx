@@ -1,3 +1,5 @@
+'use client';
+
 import MonthNavigator from './MonthNavigator';
 import { useMonthlyCalendar } from '../hooks/useMonthlyCalendar';
 import { firstWeekday, monthDays, todayISO } from '../utils/dateRange';

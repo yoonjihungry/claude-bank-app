@@ -2,6 +2,34 @@
 
 의미 있는 변경 사항을 "날짜 — 무엇을 바꿨는지" 형식으로 최신순으로 기록한다.
 
+## 2026-07-08 — 고정지출/반복거래 + 커스텀 색상 선택기
+
+로그인/DB(Phase 8)는 미룬 채, 현재 localStorage 기반 앱에 실용 기능을 보완했다.
+
+- **고정지출/반복거래(매월)**: `RecurringRule` 타입(카테고리·금액·결제수단·매달 며칠·시작월·활성·`generatedMonths`)과 `Transaction.recurringId?`를 추가. `repository`에 `getRecurringRules/saveRecurringRules`(키 `bankapp.recurringRules`), `LedgerContext`에 `ADD/UPDATE/DELETE_RULE`·`RUN_RECURRING` 액션과 저장 구독을 추가했다. 앱을 열 때(마운트 1회) 각 활성 규칙의 시작월~이번 달 중 미생성 달의 거래를 자동 생성한다. 거래 id를 `규칙id__YYYY-MM` 결정적 값으로 만들고 `generatedMonths`에 기록해 **중복 생성을 막고, 자동 생성분을 지워도 되살아나지 않게** 했다(멱등). 조회/CRUD는 `hooks/useRecurring`으로 일원화.
+- **등록 진입은 거래 입력 폼의 '매달 반복' 체크박스**: 신규 입력에서만 노출. 체크 시 그 거래를 이번 달치로 두고(해당 월을 `generatedMonths`에 시드) 다음 달부터 자동 생성되는 규칙을 함께 만든다. 거래 목록에는 자동 생성분에 **'고정' 뱃지**를 표시.
+- **관리(수정·해지)는 카테고리 페이지 하단 '고정거래 관리 (N건)' 접힘 섹션**(`RecurringPanel`/`RecurringModal`): 자주 안 건드리는 설정성 항목이라 기본 접힘. 펼치면 목록·on/off 토글·삭제 + 직접 추가. 규칙 삭제 시 이미 생성된 과거 거래는 남긴다.
+- **커스텀 색상 선택기(CategoryModal)**: OS 기본 `input[type=color]` 팝업을 걷어내고 **앱 내 색상 선택기 패널**(채도/명도 박스 + 색조 슬라이더 + RGB/HEX, 우상단 ✓로 확정)로 교체했다. 고른 색은 팔레트에 **새 스와치로 추가·선택**되고, 이미 카테고리가 쓰는 색은 다음에도 스와치로 노출된다(팔레트 = 기본색 ∪ 사용 중인 색 ∪ 이번에 추가한 색). HSV↔RGB↔HEX 변환은 `utils/color.ts` 신설.
+
+## 2026-07-07 — 로그인 진입 UX: 안내 바텀시트
+
+- 헤더 "로그인" 클릭이 곧바로 구글로 리다이렉트되던 것을, 먼저 **안내 바텀시트**(`components/LoginSheet.tsx` 신설)를 여는 방식으로 바꿨다. 시트 안의 "Google로 계속하기"를 눌렀을 때만 `signIn('google')`이 실행된다.
+- 시트 구성: 💰 브랜드 + 헤드라인("로그인하고 어디서나 이어보기") + 안내 문구 + Google 공식 스타일 버튼 + "나중에 하기"(hover 시 밑줄, 배경 없음) + 약관 문구. 스크림·Esc·바깥클릭·X로 닫힌다. 색은 전부 디자인 토큰, 앱 콘텐츠 폭(480/600) 중앙 정렬.
+- `HeaderAuth`는 비로그인 시 로그인 버튼이 `signIn` 직접 호출 대신 `sheetOpen` 상태로 시트를 열도록 변경. 게이팅 정책 B(로그인 선택)에 맞춰 "로그인 안 해도 그대로 사용"을 시트에서 안내한다.
+
+## 2026-07-07 — Vite → Next.js 마이그레이션 (Phase 1~7)
+
+`feat/migrate-to-nextjs` 브랜치에서 진행. 전환 전 상태는 `v0.1-vite-final` 태그로 백업. 상세 체크리스트는 `docs/migration-plan.md`, 결정 배경은 `docs/decisions.md` 참조. (main 브랜치는 아직 Vite 유지 — Phase 8~9 후 머지 예정.)
+
+- **Phase 1 골격**: Vite → Next.js 16(App Router, Turbopack, `src/`) 전환. `@tailwindcss/vite` → `@tailwindcss/postcss`. 의존성(recharts·date-fns·uuid·pretendard-gov) 이관.
+- **Phase 2 스타일**: `src/styles/tokens.css`·`index.css` 그대로 이관, `app/layout.tsx`에서 글로벌 CSS import, Pretendard GOV 폰트 명시 적용.
+- **Phase 3 코드 이관**: types·utils·hooks·constants·components 이관, 상태/이벤트 컴포넌트와 `LedgerContext`에 `'use client'` 경계 지정, `@/` 경로 alias 반영.
+- **Phase 4 라우팅**: `App.tsx` 탭 state 라우팅 → `app/` 파일 라우팅(`/`, `/transactions`, `/budget`). 하단 탭은 `next/link`+`usePathname`. 공통 셸을 `app/AppShell.tsx`(헤더+탭바+Provider)로 분리.
+- **Phase 5 배포**: Vercel 자동 빌드·Next.js 프리셋 자동 감지·프리뷰 동작 확인.
+- **Phase 6 DB**: Vercel(Neon) Postgres + Prisma 7 도입. 스키마에 User/Account/Session/VerificationToken(NextAuth) + Transaction/Category/Budget(각 `userId` 포함) 정의 후 마이그레이션 실행. `prisma-client` 제너레이터(`src/generated/prisma`, gitignore), PrismaPg 드라이버 어댑터, 풀링(`DATABASE_URL`)/논풀링(`DATABASE_URL_UNPOOLED`) URL 분리.
+- **Phase 7 인증**: Auth.js v5(NextAuth) + `@auth/prisma-adapter`, DB 세션 전략. `lib/auth.ts` 중앙 설정, `app/api/auth/[...nextauth]/route.ts`, `AuthProvider`(SessionProvider 경계), `HeaderAuth`(로그인/아바타/로그아웃). Google OAuth 연동, 로컬·Vercel 프리뷰 로그인 동작 확인.
+- **아직 안 함**: Phase 8(localStorage → 서버 API 저장소 교체), Phase 9(로딩/에러 처리·`CLAUDE.md`/`design-system.md` 갱신).
+
 ## 2026-07-06 — 헤더 로그인 버튼 + 콘텐츠 폭 480px + 하단 탭바 full-width
 
 - **콘텐츠 폭 규칙 변경**: 모바일 상한을 `360px` → `480px`로 넓혔다(`App.tsx`의 `CONTENT`, PC는 600px 유지). 헤더·본문·탭바에 공통 적용되는 전역 규칙이라 `design-system.md` Layout 섹션도 480/600으로 갱신(뒤집혀 있던 서술도 정정).

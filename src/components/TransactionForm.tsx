@@ -1,8 +1,11 @@
+'use client';
+
 import { useState, type FormEvent } from 'react';
 import { format } from 'date-fns';
 import { INSTALLMENT_MONTHS } from '../constants/installments';
 import { DEFAULT_PAYMENT_METHOD, PAYMENT_METHODS } from '../constants/paymentMethods';
 import { useCategories } from '../hooks/useCategories';
+import { useRecurring } from '../hooks/useRecurring';
 import { formatWon } from '../utils/format';
 import type { PaymentMethod, Transaction, TxType } from '../types';
 
@@ -17,6 +20,7 @@ const today = () => format(new Date(), 'yyyy-MM-dd');
 
 export default function TransactionForm({ initial, onSubmit, onCancel }: Props) {
   const { byType } = useCategories();
+  const { addRecurringRule } = useRecurring();
   const [type, setType] = useState<TxType>(initial?.type ?? 'expense');
   const [amount, setAmount] = useState(initial ? String(initial.amount) : '');
   const [category, setCategory] = useState(
@@ -31,6 +35,8 @@ export default function TransactionForm({ initial, onSubmit, onCancel }: Props) 
   const [installmentMonths, setInstallmentMonths] = useState(
     initial?.installmentMonths ?? 1,
   );
+  // 매달 반복(고정거래) 등록 여부. 신규 입력에서만 노출한다.
+  const [repeat, setRepeat] = useState(false);
   const [error, setError] = useState('');
 
   const isEdit = initial != null;
@@ -50,6 +56,7 @@ export default function TransactionForm({ initial, onSubmit, onCancel }: Props) 
     setMemo('');
     setMethod(DEFAULT_PAYMENT_METHOD);
     setInstallmentMonths(1);
+    setRepeat(false);
     setError('');
   }
 
@@ -60,20 +67,38 @@ export default function TransactionForm({ initial, onSubmit, onCancel }: Props) 
       setError('금액을 0보다 크게 입력하세요.');
       return;
     }
+    const roundedAmount = Math.round(amountNum);
+    // 결제수단은 지출에만 저장한다.
+    const txMethod = type === 'expense' ? method : undefined;
     onSubmit({
       type,
-      amount: Math.round(amountNum),
+      amount: roundedAmount,
       category,
       date,
       memo: memo.trim() || undefined,
-      // 결제수단은 지출에만 저장한다.
-      method: type === 'expense' ? method : undefined,
+      method: txMethod,
       // 할부는 신용카드 지출에서 2개월 이상일 때만 저장한다.
       installmentMonths:
         type === 'expense' && method === 'credit' && installmentMonths >= 2
           ? installmentMonths
           : undefined,
     });
+    // '매달 반복' 체크 시(신규 입력만) 고정거래 규칙을 함께 등록한다.
+    // 방금 입력한 거래가 이 달치이므로, 그 달을 generatedMonths에 넣어 중복 생성을 막는다.
+    if (!isEdit && repeat) {
+      const startMonth = date.slice(0, 7);
+      addRecurringRule({
+        type,
+        amount: roundedAmount,
+        category,
+        method: txMethod,
+        dayOfMonth: Number(date.slice(8, 10)),
+        memo: memo.trim() || undefined,
+        startMonth,
+        active: true,
+        generatedMonths: [startMonth],
+      });
+    }
     if (!isEdit) reset();
   }
 
@@ -197,6 +222,25 @@ export default function TransactionForm({ initial, onSubmit, onCancel }: Props) 
             </div>
           )}
         </div>
+      )}
+
+      {!isEdit && (
+        <label className="flex cursor-pointer items-start gap-2.5 rounded-md border border-input px-3 py-2.5 text-sm">
+          <input
+            type="checkbox"
+            checked={repeat}
+            onChange={(e) => setRepeat(e.target.checked)}
+            className="mt-0.5 h-4 w-4 shrink-0 accent-primary"
+          />
+          <span className="flex flex-col gap-0.5">
+            <span className="font-medium text-foreground">매달 반복</span>
+            <span className="text-xs text-muted-foreground">
+              {repeat
+                ? `다음 달부터 매달 ${Number(date.slice(8, 10))}일에 자동 기록돼요.`
+                : '월세·구독료·급여처럼 매달 반복되는 항목이면 켜세요.'}
+            </span>
+          </span>
+        </label>
       )}
 
       <label className="flex flex-col gap-1 text-sm text-muted-foreground">

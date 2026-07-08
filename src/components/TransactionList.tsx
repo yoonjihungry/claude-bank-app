@@ -1,3 +1,5 @@
+'use client';
+
 import { paymentMethodMeta } from '../constants/paymentMethods';
 import { useCategories } from '../hooks/useCategories';
 import type { Transaction } from '../types';
@@ -56,6 +58,11 @@ export default function TransactionList({ transactions, onEdit, onDelete }: Prop
                 {isExpense && tx.installmentMonths && tx.installmentMonths >= 2 && (
                   <span className="rounded-full bg-credit/10 px-1.5 py-0.5 text-[11px] font-semibold text-credit">
                     할부 {tx.installmentMonths}개월
+                  </span>
+                )}
+                {tx.recurringId && (
+                  <span className="rounded-full bg-primary/10 px-1.5 py-0.5 text-[11px] font-semibold text-primary">
+                    고정
                   </span>
                 )}
               </div>

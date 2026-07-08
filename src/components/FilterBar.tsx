@@ -1,3 +1,5 @@
+'use client';
+
 import { useCategories } from '../hooks/useCategories';
 import type { TransactionFilter } from '../hooks/useTransactions';
 import type { TxType } from '../types';
