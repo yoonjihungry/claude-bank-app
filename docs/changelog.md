@@ -16,6 +16,33 @@
 - **아티클 캐러셀을 `translateX` 드래그 방식으로 재작성**: 네이티브 스크롤(+스크롤 정지 후 JS 정렬)을 걷어냈다. **한 번 끌면 아무리 길게 끌어도 딱 1장만** 넘어간다(임계값 40px, 미만이면 제자리 복귀). 판정만 막으면 길게 끌 때 트랙이 따라갔다 되돌아와 튕기므로 드래그 오프셋 자체를 1칸으로 클램프했다. 센터 모드·무한 순환·자동 이동 없음은 그대로고, 활성 카드 확대 효과는 넣지 않았다. 그동안의 드래그 떨림은 스크롤 관성과 JS가 같은 `scrollLeft`를 두고 경합해서 생긴 것이라, 위치를 JS 단독으로 만들면서 원인이 사라졌다. 복제는 5벌 → 3벌, 무한 순환 복귀 시점은 `transitionend` → 다음 `pointerdown`(정확히 한 칸을 끌면 transform이 안 바뀌어 `transitionend`가 오지 않는다). 배경은 `docs/decisions.md` 2026-07-15 항목 참조.
 - **아티클 카드가 중앙에서 미세하게 어긋나던 버그 수정**: 정렬 기준을 `offsetLeft`로 잡았는데 스크롤러부터 `<body>`까지 positioned 조상이 없어 `offsetParent`가 `<body>`가 됐고, 그 결과 프레임 `mx-auto` 좌측 여백이 계산에 섞여 창 너비에 따라 카드가 밀렸다. 재작성 과정에서 좌표계를 뷰포트 실측 기준으로 바꿔 해소했다.
 
+## 2026-07-15 — CLAUDE.md를 Next.js 현재 구조에 맞게 갱신 (Phase 9 일부)
+
+마이그레이션 Phase 9의 "`CLAUDE.md` 업데이트" 항목이 체크되지 않은 채 남아 있었다. 그 사이 Next.js
+전환이 main에 머지(`b1334f7`)돼, CLAUDE.md만 Vite 시절 내용으로 굳어 실제 코드와 어긋나 있었다.
+마지막으로 CLAUDE.md를 건드린 커밋이 `3e8b972`(카테고리 CRUD)로 마이그레이션보다 앞선다.
+
+- **Tech Stack**: React+Vite SPA → Next.js 16(App Router, Turbopack) + React 19. `@tailwindcss/vite`
+  → `@tailwindcss/postcss`. 인증(Auth.js v5 + Google)·DB(Neon Postgres + Prisma 7) 항목 신설.
+- **데이터 저장의 현재 상태**를 명시했다 — 가계부 데이터는 여전히 localStorage이고, Prisma/Postgres는
+  인증 테이블만 쓴다. 스키마에 Transaction/Category/Budget이 있지만 앱은 아직 읽지 않는다(Phase 8 과제).
+  이걸 안 적으면 "DB 있으니 DB에서 읽겠지"로 오해하기 쉬운 지점이다.
+- **Directory Structure**: `vite.config.ts`·`index.html`·`main.tsx`·`App.tsx` 제거, `app/`(라우트 래퍼)
+  `screens/`(화면 본체) 분리 구조와 `lib/`·`generated/prisma`·`prisma/` 반영. 누락돼 있던 파일들
+  (`constants/paymentMethods·installments`, `hooks/useRecurring·useDailySpending·useMonthlyCalendar`,
+  `utils/color·tokenColor`, `components/AuthProvider·HeaderAuth·LoginSheet·CreditBillingCard·Recurring*`) 추가.
+- **Data Model**: `PaymentMethod`·`RecurringRule`과 `Transaction.method/installmentMonths/recurringId` 반영.
+  선택적 필드를 필수로 바꾸지 말라는 이유(기존 localStorage 데이터 호환)를 명시.
+- **Architecture Rules**: reducer 액션에 `ADD/UPDATE/DELETE_RULE`·`RUN_RECURRING` 추가. 반복거래 멱등성,
+  서버/클라이언트 경계(`'use client'`) 규칙 신설.
+- 이 문서는 **main 기준**으로 썼다. `/desk` 데모(`BARE_ROUTES`·`--desk-*`·`screens/DeskHomePage`)는 아직
+  `feat/desk-home`에만 있어 의도적으로 넣지 않았다 — 그 브랜치가 머지될 때 함께 반영한다.
+- **Commands**: `next dev/build/start`, `oxlint`, `npx tsc --noEmit`, `db:push/migrate/studio`,
+  `postinstall`의 `prisma generate`로 갱신. **Environment**(`.env.local` 키 목록)·**Docs** 섹션 신설.
+- `docs/migration-plan.md` Phase 9 체크리스트 정리: CLAUDE.md 항목 체크. `decisions.md`·`changelog.md`
+  기록 항목은 이미 작성돼 있어 체크(연결 항목 명시). `design-system.md` 경로 갱신 항목은 `src/styles/`가
+  그대로라 불필요로 표시.
+
 ## 2026-07-14 — 공유데스크 데모 홈 화면(/desk) 추가 (피그마 시안 이식)
 
 가계부 본 서비스와 별개로, 피그마 시안 "Main_on"(360×2860, 공유데스크 코워킹 서비스 모바일 홈)을 새 라우트로 이식했다. Figma MCP(framelink `figma-developer-mcp`, PAT `file_content:read`)로 노드 데이터를 읽어 레이아웃·간격·텍스트를 옮겼다.
@@ -26,6 +53,7 @@
 - **아티클 슬라이드**: 첫 렌더부터 센터 모드(좌우 이웃이 걸쳐 보임), 마우스 드래그로만 이동하고 자동 슬라이드는 없다. CSS `snap-mandatory`는 드래그 중 카드를 강제로 당겨 떨림이 생겨 쓰지 않고, 스크롤이 멈춘 뒤 JS로 무한 루프 복귀 + 가장 가까운 카드로 부드럽게 중앙 정렬한다.
 - **디자인 토큰(`--desk-*`) 신설**: 시안 팔레트가 본 앱과 달라 `tokens.css`에 별도 네임스페이스로 추가하고 `index.css`에 매핑했다(`--desk-primary` #006ffd, `--desk-accent` #eb601c, `--desk-accent-strong` #dc5714, `--desk-ink/body/muted/soft/hint/line`, `--desk-surface/on-dark`). 화면 내 색은 전부 이 토큰 유틸리티만 사용(HEX/기본 팔레트 미사용).
 - **이미지는 회색 플레이스홀더**로 두었다(실제 사진은 추후 `download_figma_images`로 교체 예정).
+
 
 ## 2026-07-08 — 고정지출/반복거래 + 커스텀 색상 선택기
 
