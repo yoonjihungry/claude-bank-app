@@ -2,6 +2,33 @@
 
 의미 있는 변경 사항을 "날짜 — 무엇을 바꿨는지" 형식으로 최신순으로 기록한다.
 
+## 2026-07-15 — CLAUDE.md를 Next.js 현재 구조에 맞게 갱신 (Phase 9 일부)
+
+마이그레이션 Phase 9의 "`CLAUDE.md` 업데이트" 항목이 체크되지 않은 채 남아 있었다. 그 사이 Next.js
+전환이 main에 머지(`b1334f7`)돼, CLAUDE.md만 Vite 시절 내용으로 굳어 실제 코드와 어긋나 있었다.
+마지막으로 CLAUDE.md를 건드린 커밋이 `3e8b972`(카테고리 CRUD)로 마이그레이션보다 앞선다.
+
+- **Tech Stack**: React+Vite SPA → Next.js 16(App Router, Turbopack) + React 19. `@tailwindcss/vite`
+  → `@tailwindcss/postcss`. 인증(Auth.js v5 + Google)·DB(Neon Postgres + Prisma 7) 항목 신설.
+- **데이터 저장의 현재 상태**를 명시했다 — 가계부 데이터는 여전히 localStorage이고, Prisma/Postgres는
+  인증 테이블만 쓴다. 스키마에 Transaction/Category/Budget이 있지만 앱은 아직 읽지 않는다(Phase 8 과제).
+  이걸 안 적으면 "DB 있으니 DB에서 읽겠지"로 오해하기 쉬운 지점이다.
+- **Directory Structure**: `vite.config.ts`·`index.html`·`main.tsx`·`App.tsx` 제거, `app/`(라우트 래퍼)
+  `screens/`(화면 본체) 분리 구조와 `lib/`·`generated/prisma`·`prisma/` 반영. 누락돼 있던 파일들
+  (`constants/paymentMethods·installments`, `hooks/useRecurring·useDailySpending·useMonthlyCalendar`,
+  `utils/color·tokenColor`, `components/AuthProvider·HeaderAuth·LoginSheet·CreditBillingCard·Recurring*`) 추가.
+- **Data Model**: `PaymentMethod`·`RecurringRule`과 `Transaction.method/installmentMonths/recurringId` 반영.
+  선택적 필드를 필수로 바꾸지 말라는 이유(기존 localStorage 데이터 호환)를 명시.
+- **Architecture Rules**: reducer 액션에 `ADD/UPDATE/DELETE_RULE`·`RUN_RECURRING` 추가. 반복거래 멱등성,
+  서버/클라이언트 경계(`'use client'`) 규칙 신설.
+- 이 문서는 **main 기준**으로 썼다. `/desk` 데모(`BARE_ROUTES`·`--desk-*`·`screens/DeskHomePage`)는 아직
+  `feat/desk-home`에만 있어 의도적으로 넣지 않았다 — 그 브랜치가 머지될 때 함께 반영한다.
+- **Commands**: `next dev/build/start`, `oxlint`, `npx tsc --noEmit`, `db:push/migrate/studio`,
+  `postinstall`의 `prisma generate`로 갱신. **Environment**(`.env.local` 키 목록)·**Docs** 섹션 신설.
+- `docs/migration-plan.md` Phase 9 체크리스트 정리: CLAUDE.md 항목 체크. `decisions.md`·`changelog.md`
+  기록 항목은 이미 작성돼 있어 체크(연결 항목 명시). `design-system.md` 경로 갱신 항목은 `src/styles/`가
+  그대로라 불필요로 표시.
+
 ## 2026-07-08 — 고정지출/반복거래 + 커스텀 색상 선택기
 
 로그인/DB(Phase 8)는 미룬 채, 현재 localStorage 기반 앱에 실용 기능을 보완했다.

@@ -128,14 +128,15 @@ app/
 
 - [ ] 로딩/에러 상태 처리 (로그인 확인 중, API 호출 중 스피너 등)
 - [ ] 로그아웃 처리, 세션 만료 처리
-- [ ] `CLAUDE.md` 업데이트 (Tech Stack, Directory Structure, Architecture Rules)
-- [ ] `design-system.md`의 파일 경로 참조 갱신 (`src/styles/` → 새 위치)
-- [ ] `decisions.md` 항목 추가:
-  - Next.js 전환 이유
-  - ORM 선택 이유 (Prisma vs Drizzle)
-  - 로그인 방식 (Google) 선택 이유
-  - 로그인 게이팅 정책 (A/B 중 선택 이유)
-- [ ] `changelog.md`에 마이그레이션 요약 기록
+- [x] `CLAUDE.md` 업데이트 (Tech Stack, Directory Structure, Architecture Rules) — 2026-07-15
+- [x] ~~`design-system.md`의 파일 경로 참조 갱신 (`src/styles/` → 새 위치)~~ — 불필요. `src/styles/`가
+  그대로 유지돼 문서의 경로 참조가 전부 유효하다.
+- [x] `decisions.md` 항목 추가 — 아래 넷 다 기록 완료
+  - Next.js 전환 이유 → "2026-07 — Vite → Next.js 마이그레이션 결정"
+  - ORM 선택 이유 (Prisma vs Drizzle) → "2026-07-07 — 인증·저장소 세부 결정 확정"
+  - 로그인 방식 (Google) 선택 이유 → 위 같은 항목
+  - 로그인 게이팅 정책 (A/B 중 선택 이유) → 위 같은 항목
+- [x] `changelog.md`에 마이그레이션 요약 기록 → "2026-07-07 — Vite → Next.js 마이그레이션 (Phase 1~7)"
 
 ---
 
