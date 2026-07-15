@@ -41,4 +41,17 @@
   --color-weekend-sat: hsl(var(--weekend-sat));
 
   --color-border: hsl(var(--border));
+
+  /* 공유데스크 데모(/desk) 전용 색 유틸리티 (bg-desk-accent, text-desk-ink 등) */
+  --color-desk-primary: hsl(var(--desk-primary));
+  --color-desk-accent: hsl(var(--desk-accent));
+  --color-desk-accent-strong: hsl(var(--desk-accent-strong));
+  --color-desk-ink: hsl(var(--desk-ink));
+  --color-desk-body: hsl(var(--desk-body));
+  --color-desk-muted: hsl(var(--desk-muted));
+  --color-desk-soft: hsl(var(--desk-soft));
+  --color-desk-hint: hsl(var(--desk-hint));
+  --color-desk-line: hsl(var(--desk-line));
+  --color-desk-surface: hsl(var(--desk-surface));
+  --color-desk-on-dark: hsl(var(--desk-on-dark));
 }

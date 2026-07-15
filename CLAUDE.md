@@ -41,15 +41,17 @@ claude-bank-app/
 └─ src/
    ├─ app/                     # App Router — 라우트 세그먼트만 둔다(얇은 래퍼)
    │   ├─ layout.tsx           # 루트 레이아웃(글로벌 CSS import, AuthProvider, AppShell)
-   │   ├─ AppShell.tsx         # 공통 셸(헤더+하단 탭바+LedgerProvider)
+   │   ├─ AppShell.tsx         # 공통 셸(헤더+하단 탭바+LedgerProvider) + BARE_ROUTES 예외
    │   ├─ page.tsx             # '/'             → screens/DashboardPage
    │   ├─ transactions/page.tsx# '/transactions' → screens/TransactionsPage
    │   ├─ budget/page.tsx      # '/budget'       → screens/BudgetPage
+   │   ├─ desk/page.tsx        # '/desk'         → screens/DeskHomePage (독립 전체화면 데모)
    │   └─ api/auth/[...nextauth]/route.ts
    ├─ screens/                 # 화면 본체(예전 pages/). app/의 page.tsx가 이걸 렌더한다
    │   ├─ DashboardPage.tsx    # 오늘의 소비 + 캘린더 + 이번달 소비금액 (3섹션)
    │   ├─ TransactionsPage.tsx # 카테고리/추이 차트 + 거래 입력·목록·필터
-   │   └─ BudgetPage.tsx       # 카테고리 추가·수정 + 예산 설정 + 고정거래 관리
+   │   ├─ BudgetPage.tsx       # 카테고리 추가·수정 + 예산 설정 + 고정거래 관리
+   │   └─ DeskHomePage.tsx     # 공유데스크 피그마 시안 데모(--desk-* 토큰, 공통 셸 미적용)
    ├─ lib/
    │   ├─ auth.ts              # NextAuth 중앙 설정(handlers/auth/signIn/signOut)
    │   └─ prisma.ts            # PrismaClient 싱글턴
@@ -168,12 +170,15 @@ interface Budget {
   `generatedMonths`에 기록한다. 같은 달을 두 번 만들지 않고, 사용자가 자동 생성분을 지워도 되살아나지 않는다.
 - **서버/클라이언트 경계**: `src/app/`은 기본 서버 컴포넌트다. 상태·이벤트·브라우저 API를 쓰는 컴포넌트에는
   `'use client'`를 명시한다(`AppShell`, `LedgerContext`, 대부분의 `components/`·`screens/`).
+- **독립 전체화면 라우트**: 자체 헤더/내비/푸터를 가진 완결형 화면은 `AppShell`의 `BARE_ROUTES`에 등록해
+  공통 셸(💰가계부 헤더+탭바)과 전역 Context 없이 렌더한다(현재 `/desk`).
 
 ## Styling Rules
 - **색상은 디자인 토큰만 사용한다**: `src/styles/tokens.css`(Source of Truth)에 정의된 토큰의 Tailwind
   유틸리티(`bg-primary`, `text-income` 등)만 쓰고, HEX/`rgb()` 하드코딩이나 Tailwind 기본 팔레트
   (`text-red-500` 등)를 쓰지 않는다. 필요한 색이 없으면 `tokens.css`에 토큰을 먼저 추가한다.
 - **라이트 전용**: 다크 모드는 지원하지 않기로 확정했다. 토큰은 `:root` 하나만 둔다.
+- 도메인이 다른 데모 화면은 별도 네임스페이스 토큰을 쓴다(예: `/desk`의 `--desk-*`).
 - 타이포그래피/레이아웃/텍스트 색상 등 전체 디자인 가이드는 `docs/design-system.md` 참조.
 
 ## Commands

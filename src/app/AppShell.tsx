@@ -9,6 +9,12 @@ import HeaderAuth from '@/components/HeaderAuth';
 /** 콘텐츠 폭 규칙(docs/design-system.md): 모바일 480px, PC(≥768px) 600px, 중앙 정렬 */
 const CONTENT = 'mx-auto w-full max-w-[480px] md:max-w-[600px]';
 
+/**
+ * 공통 셸(헤더·탭바)을 씌우지 않는 독립 화면 라우트.
+ * 자체 헤더/내비/푸터를 가진 완결형 시안(예: /desk)은 여기에 등록한다.
+ */
+const BARE_ROUTES = ['/desk'];
+
 const TABS: { href: string; label: string }[] = [
   { href: '/', label: '홈' },
   { href: '/transactions', label: '거래' },
@@ -24,6 +30,11 @@ export default function AppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
+
+  // 독립 화면 라우트는 공통 셸/전역 Context 없이 페이지만 그대로 렌더한다.
+  if (BARE_ROUTES.some((r) => pathname === r || pathname.startsWith(`${r}/`))) {
+    return <>{children}</>;
+  }
 
   return (
     <LedgerProvider>
