@@ -22,16 +22,29 @@ interface DeskItem {
   top?: boolean;
 }
 
+// sharedesk.co.kr의 "지금 인기 데스크"(신뢰등급 높은 순) 구성을 참고한 샘플 8건.
+// 같은 지점의 좌석이 여러 건 걸리는 게 원본 성격이라 업체명이 반복된다.
 const POPULAR_DESKS: DeskItem[] = [
-  { name: '코워크라운지 성수점', desks: '데스크 5', area: '성수', address: '서울 송파구 올림픽로 269', price: '265,000', top: true },
-  { name: '더데스크 강남점', desks: '데스크 8', area: '강남', address: '서울 강남구 테헤란로 152', price: '320,000', top: true },
-  { name: '스페이스원 판교점', desks: '데스크 3', area: '판교', address: '경기 성남시 분당구 판교역로 235', price: '198,000' },
+  { name: '허브스페이스 잠실점', desks: '베이직석 #5', area: '잠실', address: '서울 송파구 올림픽로 269', price: '265,000', top: true },
+  { name: '허브스페이스 잠실점', desks: '베이직석 #4', area: '잠실', address: '서울 송파구 올림픽로 269', price: '300,000', top: true },
+  { name: '허브스페이스 잠실점', desks: '스탠다드석 #3', area: '잠실', address: '서울 송파구 올림픽로 269', price: '405,000', top: true },
+  { name: '허브스페이스 잠실점', desks: '스탠다드석 #2', area: '잠실', address: '서울 송파구 올림픽로 269', price: '380,000', top: true },
+  { name: '허브스페이스 잠실점', desks: '프리미엄석 #1', area: '잠실', address: '서울 송파구 올림픽로 269', price: '585,000', top: true },
+  { name: '코워크라운지 성수점', desks: '베이직석 #5', area: '성수', address: '서울 성동구 아차산로 17', price: '285,000', top: true },
+  { name: '코워크라운지 성수점', desks: '베이직석 #4', area: '성수', address: '서울 성동구 아차산로 17', price: '260,000', top: true },
+  { name: '코워크라운지 성수점', desks: '스탠다드석 #3', area: '성수', address: '서울 성동구 아차산로 17', price: '425,000' },
 ];
 
+// 같은 출처(sharedesk.co.kr /desks)의 다른 지점 8건 — 인기 데스크(잠실·성수)와 겹치지 않게 강남·광화문으로 골랐다.
 const RECOMMENDED_DESKS: DeskItem[] = [
-  { name: '리모트하우스 역삼', desks: '데스크 6', area: '역삼', address: '서울 강남구 논현로 430', price: '245,000', top: true },
-  { name: '노마드플레이스 홍대', desks: '데스크 4', area: '홍대', address: '서울 마포구 양화로 45', price: '175,000' },
-  { name: '포커스룸 여의도', desks: '데스크 10', area: '여의도', address: '서울 영등포구 국제금융로 10', price: '410,000' },
+  { name: '위코워킹 강남점', desks: '베이직석 #5', area: '강남', address: '서울 강남구 테헤란로 152', price: '305,000', top: true },
+  { name: '위코워킹 강남점', desks: '베이직석 #4', area: '강남', address: '서울 강남구 테헤란로 152', price: '280,000', top: true },
+  { name: '위코워킹 강남점', desks: '스탠다드석 #3', area: '강남', address: '서울 강남구 테헤란로 152', price: '385,000', top: true },
+  { name: '위코워킹 강남점', desks: '스탠다드석 #2', area: '강남', address: '서울 강남구 테헤란로 152', price: '420,000', top: true },
+  { name: '위코워킹 강남점', desks: '프리미엄석 #1', area: '강남', address: '서울 강남구 테헤란로 152', price: '565,000', top: true },
+  { name: '데일리워크 광화문점', desks: '베이직석 #5', area: '광화문', address: '서울 종로구 세종대로 175', price: '265,000', top: true },
+  { name: '데일리워크 광화문점', desks: '베이직석 #4', area: '광화문', address: '서울 종로구 세종대로 175', price: '300,000', top: true },
+  { name: '데일리워크 광화문점', desks: '스탠다드석 #3', area: '광화문', address: '서울 종로구 세종대로 175', price: '405,000' },
 ];
 
 interface GridItem {
@@ -307,14 +320,67 @@ function DeskCard({ item }: { item: DeskItem }) {
   );
 }
 
+/**
+ * 데스크 가로 캐러셀 — 아티클과 같은 "한 번 끌면 딱 1장" 손맛(useOneStepDrag).
+ * 아티클과 달리 센터 모드/무한 순환이 아니라 왼쪽 정렬 + 양끝에서 멈춘다(참고 시안도 loop 없음).
+ */
 function DeskCarousel({ title, items }: { title: string; items: DeskItem[] }) {
+  const viewportRef = useRef<HTMLDivElement>(null);
+  const trackRef = useRef<HTMLDivElement>(null);
+  const [index, setIndex] = useState(0);
+  const [metrics, setMetrics] = useState({ step: 0, max: 0 });
+
+  // 카드 폭·간격·좌우 여백은 CSS가 정하므로 실측한다. 뷰포트를 직접 관찰해야
+  // 세로 스크롤바 유무로 폭이 바뀌는 것까지 잡힌다(window resize는 이때 안 온다).
+  useLayoutEffect(() => {
+    const vp = viewportRef.current;
+    if (!vp) return;
+    const measure = () => {
+      const track = trackRef.current;
+      const first = track?.children[0] as HTMLElement | undefined;
+      const second = track?.children[1] as HTMLElement | undefined;
+      if (!track || !first || !second) return;
+      const cardW = first.getBoundingClientRect().width;
+      const step = second.getBoundingClientRect().left - first.getBoundingClientRect().left;
+      const cs = getComputedStyle(track);
+      // 마지막 카드가 오른쪽 여백까지 온전히 보이는 지점 = 이동 한계
+      const content = parseFloat(cs.paddingLeft) + items.length * step - (step - cardW) + parseFloat(cs.paddingRight);
+      setMetrics({ step, max: Math.max(0, content - vp.clientWidth) });
+    };
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(vp);
+    return () => ro.disconnect();
+  }, [items.length]);
+
+  // 끝까지 가는 데 필요한 칸 수. step으로 딱 나눠떨어지지 않아 마지막 칸은 짧게 이동한다.
+  const maxIndex = metrics.step ? Math.ceil(metrics.max / metrics.step) : 0;
+  const { offset, transition, handlers } = useOneStepDrag(metrics.step, (dir) =>
+    setIndex((i) => Math.min(maxIndex, Math.max(0, i + dir))),
+  );
+
+  // 인덱스의 "확정 위치". 마지막 칸은 step 배수가 아니라 끝(max)에 붙는다 —
+  // -index*step을 그대로 쓰고 결과만 자르면, 마지막에서 되돌릴 때 잘려나간 만큼
+  // (step - 나머지) 끌어도 꿈쩍 않는 死구간이 생긴다.
+  const at = (i: number) => Math.min(i * metrics.step, metrics.max);
+  // 양끝을 넘어가지 않게 이동량 자체를 가둔다 → 끄는 중에도 빈 공간이 드러나지 않는다.
+  const x = Math.max(-metrics.max, Math.min(0, -at(index) + offset));
+
   return (
     <section className="flex flex-col gap-3.5">
       <h2 className="px-5 text-[18px] font-bold text-desk-ink">{title}</h2>
-      <div className="flex gap-3 overflow-x-auto px-5 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-        {items.map((it) => (
-          <DeskCard key={it.name} item={it} />
-        ))}
+      <div ref={viewportRef} className="overflow-hidden pb-1">
+        <div
+          ref={trackRef}
+          {...handlers}
+          className="flex touch-pan-y cursor-grab gap-3 px-5 select-none active:cursor-grabbing"
+          style={{ transform: `translate3d(${x}px, 0, 0)`, transition }}
+        >
+          {items.map((it) => (
+            // 같은 지점의 좌석이 여러 건이라 name만으론 안 되고 좌석까지 묶어야 유일해진다
+            <DeskCard key={`${it.name}-${it.desks}`} item={it} />
+          ))}
+        </div>
       </div>
     </section>
   );
@@ -462,7 +528,50 @@ function PromoBanner() {
 }
 
 const ARTICLE_COPIES = 3; // 앞/가운데/뒤 — 좌우 이웃이 항상 채워지는 최소 벌 수
-const ARTICLE_DRAG_THRESHOLD = 40; // 이만큼 끌어야 넘어간다(px). 미만이면 제자리 복귀
+const DRAG_THRESHOLD = 40; // 이만큼 끌어야 넘어간다(px). 미만이면 제자리 복귀
+const SLIDE_TRANSITION = 'transform 350ms cubic-bezier(0.22, 1, 0.36, 1)';
+
+/**
+ * "한 번 끌면 딱 1장" 드래그 공통 로직 — 아티클/데스크 캐러셀이 같은 손맛을 갖도록 공유한다.
+ * 방향(dir)만 알려주고 인덱스 해석(무한 순환이냐 양끝 고정이냐)은 호출측이 정한다.
+ *
+ * `offset`을 1칸(step)으로 제한하는 게 핵심이다. 판정만 1장으로 막으면 길게 끌 때
+ * 트랙이 손을 따라 멀리 갔다가 1칸만 남기고 되돌아와 튕긴다.
+ */
+function useOneStepDrag(step: number, onStep: (dir: -1 | 1) => void, onGrab?: () => void) {
+  const [drag, setDrag] = useState(0);
+  const [animate, setAnimate] = useState(false); // 첫 렌더는 애니메이션 없이 제자리에
+  const dragging = useRef(false);
+  const startX = useRef(0);
+
+  const end = () => {
+    if (!dragging.current) return;
+    dragging.current = false;
+    const dir = drag <= -DRAG_THRESHOLD ? 1 : drag >= DRAG_THRESHOLD ? -1 : 0;
+    setAnimate(true);
+    setDrag(0);
+    if (dir !== 0) onStep(dir);
+  };
+
+  return {
+    offset: step ? Math.sign(drag) * Math.min(Math.abs(drag), step) : 0,
+    transition: animate ? SLIDE_TRANSITION : 'none',
+    handlers: {
+      onPointerDown: (e: React.PointerEvent<HTMLDivElement>) => {
+        dragging.current = true;
+        startX.current = e.clientX;
+        setAnimate(false);
+        onGrab?.();
+        e.currentTarget.setPointerCapture(e.pointerId);
+      },
+      onPointerMove: (e: React.PointerEvent<HTMLDivElement>) => {
+        if (dragging.current) setDrag(e.clientX - startX.current);
+      },
+      onPointerUp: end,
+      onPointerCancel: end,
+    },
+  };
+}
 
 /**
  * 아티클 캐러셀 — 센터 모드 + 무한 순환. 자동 이동/확대 효과는 없다.
@@ -478,56 +587,38 @@ function ArticleSlides() {
   const slides = Array.from({ length: ARTICLE_COPIES }, () => ARTICLES).flat();
 
   const [index, setIndex] = useState(N); // 가운데 벌의 첫 카드에서 시작
-  const [drag, setDrag] = useState(0); // 드래그 중 손끝을 따라오는 오프셋
-  const [animate, setAnimate] = useState(false); // 첫 렌더는 애니메이션 없이 제자리에
   const [metrics, setMetrics] = useState({ step: 0, center: 0 });
-  const dragging = useRef(false);
-  const startX = useRef(0);
 
   // 카드 폭·간격·뷰포트 폭은 CSS와 창 크기가 정하므로 DOM에서 실측한다.
+  // window resize가 아니라 뷰포트 자체를 관찰한다 — 세로 스크롤바가 생겼다 사라지면
+  // 창 크기는 그대로인데 뷰포트 폭만 바뀌어 resize 이벤트가 오지 않는다.
   useLayoutEffect(() => {
+    const vp = viewportRef.current;
+    if (!vp) return;
     const measure = () => {
-      const vp = viewportRef.current;
       const first = trackRef.current?.children[0] as HTMLElement | undefined;
       const second = trackRef.current?.children[1] as HTMLElement | undefined;
-      if (!vp || !first || !second) return;
+      if (!first || !second) return;
+      const rect = first.getBoundingClientRect(); // offsetLeft/clientWidth와 달리 소수점까지 잡힌다
       setMetrics({
-        step: second.offsetLeft - first.offsetLeft, // 카드 폭 + 간격
-        center: (vp.clientWidth - first.clientWidth) / 2, // 카드를 가운데 두는 여백
+        step: second.getBoundingClientRect().left - rect.left, // 카드 폭 + 간격
+        center: (vp.clientWidth - rect.width) / 2, // 카드를 가운데 두는 여백
       });
     };
     measure();
-    window.addEventListener('resize', measure);
-    return () => window.removeEventListener('resize', measure);
+    const ro = new ResizeObserver(measure);
+    ro.observe(vp);
+    return () => ro.disconnect();
   }, []);
 
-  const onPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
-    dragging.current = true;
-    startX.current = e.clientX;
-    setAnimate(false);
-    // 무한 순환 복귀는 여기서 한다. 이동이 끝난 뒤(transitionend)에 하면 드래그를
+  const { offset, transition, handlers } = useOneStepDrag(
+    metrics.step,
+    (dir) => setIndex((i) => i + dir), // 끝이 없으므로 그냥 더한다 — 복귀는 아래 onGrab에서
+    // 무한 순환 복귀는 잡는 순간에 한다. 이동이 끝난 뒤(transitionend)에 하면 드래그를
     // 정확히 1칸 채웠을 때 transform이 그대로라 이벤트가 안 와서 복귀를 놓친다.
-    setIndex((i) => N + (((i - N) % N) + N) % N); // 내용이 같은 가운데 벌 → 눈에 안 보임
-    e.currentTarget.setPointerCapture(e.pointerId);
-  };
+    () => setIndex((i) => N + (((i - N) % N) + N) % N), // 내용이 같은 가운데 벌 → 눈에 안 보임
+  );
 
-  const onPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
-    if (dragging.current) setDrag(e.clientX - startX.current);
-  };
-
-  const onPointerUp = () => {
-    if (!dragging.current) return;
-    dragging.current = false;
-    const dir = drag <= -ARTICLE_DRAG_THRESHOLD ? 1 : drag >= ARTICLE_DRAG_THRESHOLD ? -1 : 0;
-    setAnimate(true);
-    setDrag(0);
-    if (dir !== 0) setIndex((i) => i + dir);
-  };
-
-  // 1장씩만 넘어가므로 끄는 동안에도 1칸을 넘어 따라가지 않는다(다음 카드가 딱 중앙에서 멈춤).
-  const offset = metrics.step
-    ? Math.sign(drag) * Math.min(Math.abs(drag), metrics.step)
-    : 0;
   const x = metrics.center - index * metrics.step + offset;
 
   return (
@@ -535,15 +626,9 @@ function ArticleSlides() {
       <div ref={viewportRef} className="overflow-hidden">
         <div
           ref={trackRef}
-          onPointerDown={onPointerDown}
-          onPointerMove={onPointerMove}
-          onPointerUp={onPointerUp}
-          onPointerCancel={onPointerUp}
+          {...handlers}
           className="flex touch-pan-y cursor-grab gap-3 select-none active:cursor-grabbing"
-          style={{
-            transform: `translate3d(${x}px, 0, 0)`,
-            transition: animate ? 'transform 350ms cubic-bezier(0.22, 1, 0.36, 1)' : 'none',
-          }}
+          style={{ transform: `translate3d(${x}px, 0, 0)`, transition }}
         >
           {slides.map((a, i) => (
             <article
