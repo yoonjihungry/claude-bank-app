@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 
 /**
  * 공유데스크 데모 홈 화면 (/desk)
@@ -461,65 +461,103 @@ function PromoBanner() {
   );
 }
 
+const ARTICLE_COPIES = 3; // 앞/가운데/뒤 — 좌우 이웃이 항상 채워지는 최소 벌 수
+const ARTICLE_DRAG_THRESHOLD = 40; // 이만큼 끌어야 넘어간다(px). 미만이면 제자리 복귀
+
+/**
+ * 아티클 캐러셀 — 센터 모드 + 무한 순환. 자동 이동/확대 효과는 없다.
+ * 한 번 끌면 아무리 길게 끌어도 딱 1장만 넘어간다(드래그 오프셋도 1칸으로 제한).
+ *
+ * 네이티브 스크롤 대신 translateX로 직접 움직인다 — 스크롤 관성/스냅이 JS 정렬과
+ * 서로 밀어내며 생기던 떨림을 없애고, 1장 제한도 스크롤로는 강제할 수 없기 때문이다.
+ */
 function ArticleSlides() {
-  const scrollerRef = useRef<HTMLDivElement>(null);
+  const viewportRef = useRef<HTMLDivElement>(null);
+  const trackRef = useRef<HTMLDivElement>(null);
   const N = ARTICLES.length;
-  const slides = Array.from({ length: 5 }, () => ARTICLES).flat(); // 5벌 복제 → 긴 드래그에도 여유 버퍼
+  const slides = Array.from({ length: ARTICLE_COPIES }, () => ARTICLES).flat();
 
-  // 스와이퍼 센터 모드 + 무한 루프(자동 이동 없음).
-  // 가운데(3번째) 벌 첫 카드를 중앙에 두고 시작하고, 스크롤이 "멈춘 뒤"에만
-  // 같은 내용의 가운데 벌로 순간 이동해 이음매 없이 끝없이 순환한다.
-  useEffect(() => {
-    const el = scrollerRef.current;
-    const first = el?.children[0] as HTMLElement | undefined;
-    const second = el?.children[1] as HTMLElement | undefined;
-    const midCard = el?.children[2 * N] as HTMLElement | undefined; // 5벌 중 가운데 벌 시작
-    if (!el || !first || !second || !midCard) return;
+  const [index, setIndex] = useState(N); // 가운데 벌의 첫 카드에서 시작
+  const [drag, setDrag] = useState(0); // 드래그 중 손끝을 따라오는 오프셋
+  const [animate, setAnimate] = useState(false); // 첫 렌더는 애니메이션 없이 제자리에
+  const [metrics, setMetrics] = useState({ step: 0, center: 0 });
+  const dragging = useRef(false);
+  const startX = useRef(0);
 
-    const step = second.offsetLeft - first.offsetLeft; // 카드 폭 + 간격
-    const copyW = step * N; // 한 벌 너비
-    const base = midCard.offsetLeft - (el.clientWidth - midCard.clientWidth) / 2; // 가운데 벌 첫 카드 중앙
-    el.scrollLeft = base;
+  // 카드 폭·간격·뷰포트 폭은 CSS와 창 크기가 정하므로 DOM에서 실측한다.
+  useLayoutEffect(() => {
+    const measure = () => {
+      const vp = viewportRef.current;
+      const first = trackRef.current?.children[0] as HTMLElement | undefined;
+      const second = trackRef.current?.children[1] as HTMLElement | undefined;
+      if (!vp || !first || !second) return;
+      setMetrics({
+        step: second.offsetLeft - first.offsetLeft, // 카드 폭 + 간격
+        center: (vp.clientWidth - first.clientWidth) / 2, // 카드를 가운데 두는 여백
+      });
+    };
+    measure();
+    window.addEventListener('resize', measure);
+    return () => window.removeEventListener('resize', measure);
+  }, []);
 
-    // CSS snap-mandatory는 드래그 "도중"에도 계속 카드를 강제로 끌어당겨 화면이 떨린다.
-    // 그래서 CSS snap을 쓰지 않고, 스크롤이 멈춘(idle) 뒤에만 JS로 처리한다:
-    //   1) 가운데 벌로 순간 복귀(내용 동일 → 안 보임) 2) 가장 가까운 카드로 부드럽게 정렬
-    let idle: ReturnType<typeof setTimeout>;
-    const settle = () => {
-      const shift = Math.round((el.scrollLeft - base) / copyW) * copyW;
-      if (shift !== 0) el.scrollLeft -= shift; // 무한 루프 복귀(seamless)
-      const nearest = base + Math.round((el.scrollLeft - base) / step) * step;
-      if (Math.abs(nearest - el.scrollLeft) > 1) el.scrollTo({ left: nearest, behavior: 'smooth' });
-    };
-    const onScroll = () => {
-      clearTimeout(idle);
-      idle = setTimeout(settle, 120); // 움직이는 동안엔 절대 건드리지 않음
-    };
-    el.addEventListener('scroll', onScroll, { passive: true });
-    return () => {
-      el.removeEventListener('scroll', onScroll);
-      clearTimeout(idle);
-    };
-  }, [N]);
+  const onPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    dragging.current = true;
+    startX.current = e.clientX;
+    setAnimate(false);
+    // 무한 순환 복귀는 여기서 한다. 이동이 끝난 뒤(transitionend)에 하면 드래그를
+    // 정확히 1칸 채웠을 때 transform이 그대로라 이벤트가 안 와서 복귀를 놓친다.
+    setIndex((i) => N + (((i - N) % N) + N) % N); // 내용이 같은 가운데 벌 → 눈에 안 보임
+    e.currentTarget.setPointerCapture(e.pointerId);
+  };
+
+  const onPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (dragging.current) setDrag(e.clientX - startX.current);
+  };
+
+  const onPointerUp = () => {
+    if (!dragging.current) return;
+    dragging.current = false;
+    const dir = drag <= -ARTICLE_DRAG_THRESHOLD ? 1 : drag >= ARTICLE_DRAG_THRESHOLD ? -1 : 0;
+    setAnimate(true);
+    setDrag(0);
+    if (dir !== 0) setIndex((i) => i + dir);
+  };
+
+  // 1장씩만 넘어가므로 끄는 동안에도 1칸을 넘어 따라가지 않는다(다음 카드가 딱 중앙에서 멈춤).
+  const offset = metrics.step
+    ? Math.sign(drag) * Math.min(Math.abs(drag), metrics.step)
+    : 0;
+  const x = metrics.center - index * metrics.step + offset;
 
   return (
     <section>
-      <div
-        ref={scrollerRef}
-        className="flex gap-3 overflow-x-auto px-15 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-      >
-        {slides.map((a, i) => (
-          <article
-            key={i}
-            className="relative flex h-[330px] w-60 shrink-0 flex-col justify-start overflow-hidden rounded-xl bg-desk-ink p-6"
-          >
-            <div className="absolute inset-0 bg-gradient-to-b from-transparent to-desk-ink/60" aria-hidden />
-            <div className="relative flex flex-col gap-2">
-              <h3 className="whitespace-pre-line text-[22px] font-bold leading-[1.25] text-desk-on-dark">{a.title}</h3>
-              <p className="text-[12px] text-desk-on-dark/85">{a.subtitle}</p>
-            </div>
-          </article>
-        ))}
+      <div ref={viewportRef} className="overflow-hidden">
+        <div
+          ref={trackRef}
+          onPointerDown={onPointerDown}
+          onPointerMove={onPointerMove}
+          onPointerUp={onPointerUp}
+          onPointerCancel={onPointerUp}
+          className="flex touch-pan-y cursor-grab gap-3 select-none active:cursor-grabbing"
+          style={{
+            transform: `translate3d(${x}px, 0, 0)`,
+            transition: animate ? 'transform 350ms cubic-bezier(0.22, 1, 0.36, 1)' : 'none',
+          }}
+        >
+          {slides.map((a, i) => (
+            <article
+              key={i}
+              className="relative flex h-[330px] w-60 shrink-0 flex-col justify-start overflow-hidden rounded-xl bg-desk-ink p-6"
+            >
+              <div className="absolute inset-0 bg-gradient-to-b from-transparent to-desk-ink/60" aria-hidden />
+              <div className="relative flex flex-col gap-2">
+                <h3 className="whitespace-pre-line text-[22px] font-bold leading-[1.25] text-desk-on-dark">{a.title}</h3>
+                <p className="text-[12px] text-desk-on-dark/85">{a.subtitle}</p>
+              </div>
+            </article>
+          ))}
+        </div>
       </div>
     </section>
   );
