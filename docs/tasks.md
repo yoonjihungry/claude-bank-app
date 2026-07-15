@@ -1,45 +1,16 @@
 # Tasks
 
 > 지금/앞으로 할 작업을 적어두는 문서.
-> 완료된 항목은 체크하고 "완료" 섹션으로 옮긴 뒤, 요약은 `changelog.md`에,
+> 완료된 항목은 여기서 지우고, 요약은 `changelog.md`에,
 > 중요한 선택 이유는 `decisions.md`에 기록한다.
 
 ---
 
 ## 최우선
 
-### [ ] Next.js 마이그레이션 + 로그인/DB 연동
-- 현재: Vite + React + localStorage
-- 목표: Next.js + Vercel Postgres + NextAuth.js → 여러 기기에서 데이터 유지
-- 상세 계획: **[`docs/migration-plan.md`](./migration-plan.md)** 참조
-- 배경/이유: `decisions.md` 참조
-
-> ⚠️ 아래 "보류(마이그레이션 이후)" 항목들은 라우팅 구조가 바뀌면 다시 손봐야 하므로
-> 마이그레이션이 끝난 뒤에 진행한다.
-
----
-
-## 보류 (마이그레이션 이후 진행)
-
-### [ ] 헤더 개편
-- [ ] 좌측 로고는 유지, 우측에 로그인 버튼 추가
-  - 마이그레이션 후에는 로그인 버튼이 실제로 동작해야 함 (NextAuth 연동)
-- [ ] `768px` 이하 브레이크포인트를 `max-width: 360px` → `480px`로 변경
-  - ⚠️ `design-system.md` > Layout 섹션 전역 규칙이므로 문서도 함께 갱신
-
-### [ ] 하단 탭 메뉴 (홈/거래/카테고리)
-- 현재: 카드 형태로 좌우·하단에 여백을 두고 둥둥 떠 있는 스타일
-- [ ] 화면 가장자리에 완전히 붙는 형태로 변경 (좌우 여백 제거, 하단 고정, full-width)
-- [ ] 모서리 radius 재검토 (완전 사각 or 상단만 radius)
-- [ ] `fixed`/`sticky` + width 100%, 컨텐츠와 겹치지 않게 하단 padding 확보
-- [ ] Next.js 라우팅으로 전환 후 `next/link`로 페이지 전환 처리
-
-### [ ] 푸터
-- 지금 단계에서는 넣을 내용 없음
-- 필요해지면(예: 버전 정보, 데이터 백업/내보내기 안내 등) 다시 논의
-
----
-
-## 완료
-
-### [x] 초기 레이아웃 구성
+### [ ] 저장소 교체 (localStorage → DB/API)
+- 현재: 인증(Auth.js + Neon Postgres)은 붙었지만 **가계부 데이터는 아직 localStorage**에 있다.
+- 목표: 로그인하면 여러 기기에서 데이터를 이어 볼 수 있게 한다.
+- 남은 범위: `migration-plan.md`의 **Phase 8**(CRUD 엔드포인트, `storage/repository.ts` API 교체,
+  최초 로그인 시 로컬 → 서버 이관) + **Phase 9**(로딩/에러 상태, 로그아웃·세션 만료 처리).
+- 상세 체크리스트: **[`docs/migration-plan.md`](./migration-plan.md)** 참조 — 진행 상황은 그쪽에서 관리한다.
