@@ -106,11 +106,6 @@ const BellIcon = ({ className }: IconProps) => (
     <circle cx="18" cy="6" r="2.5" fill="hsl(var(--desk-accent))" />
   </svg>
 );
-const SparkleIcon = ({ className }: IconProps) => (
-  <svg viewBox="0 0 12 12" fill="currentColor" className={className} aria-hidden>
-    <path d="M6 0c.3 2.7 1.3 3.7 4 4-2.7.3-3.7 1.3-4 4-.3-2.7-1.3-3.7-4-4 2.7-.3 3.7-1.3 4-4Z" />
-  </svg>
-);
 const ChevronRight = ({ className }: IconProps) => (
   <svg viewBox="0 0 24 24" fill="none" className={className} aria-hidden>
     <path d="m9 6 6 6-6 6" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
@@ -119,6 +114,12 @@ const ChevronRight = ({ className }: IconProps) => (
 const ChevronLeft = ({ className }: IconProps) => (
   <svg viewBox="0 0 24 24" fill="none" className={className} aria-hidden>
     <path d="m15 6-6 6 6 6" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+);
+// 시안의 arrow 벡터는 가로:세로가 2:1(탭 확장 10x5, 푸터 8x4)인 아래쪽 chevron이다.
+const ChevronDown = ({ className }: IconProps) => (
+  <svg viewBox="0 0 24 24" fill="none" className={className} aria-hidden>
+    <path d="m7 10 5 5 5-5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
   </svg>
 );
 const HeartIcon = ({ className, filled }: IconProps & { filled?: boolean }) => (
@@ -393,9 +394,7 @@ function AiCta() {
         type="button"
         className="flex h-[46px] w-full items-center justify-center gap-2.5 rounded-[10px] border border-desk-line bg-desk-surface text-[14px] font-semibold text-desk-muted shadow-sm"
       >
-        <SparkleIcon className="h-3 w-3 text-desk-primary" />
         <span>공데AI 맞춤 추천 더보기</span>
-        <ChevronRight className="h-3.5 w-3.5 text-desk-primary" />
       </button>
     </section>
   );
@@ -438,9 +437,17 @@ function WhereSection() {
     <section className="flex flex-col gap-6">
       <div className="flex flex-col gap-3.5">
         <h2 className="px-5 text-[18px] font-bold text-desk-ink">어디서 일하세요?</h2>
-        <div className="flex items-start gap-2 px-5">
-          {/* 기본은 한 줄(넘치면 잘림), 화살표를 누르면 아래로 펼쳐진다(wrap) */}
-          <div className={`flex flex-1 gap-1.5 ${expanded ? 'flex-wrap' : 'flex-nowrap overflow-hidden'}`}>
+        {/* 기본은 한 줄, 화살표를 누르면 아래로 펼쳐진다(wrap).
+            시안의 탭 확장 버튼은 칩 줄 위에 얹힌 흰 원이라, 접힘 상태의 칩은
+            버튼에 닿기 전 페이드로 사라진다(하드 컷 금지). */}
+        <div className="relative px-5">
+          <div
+            className={`flex gap-1.5 ${
+              expanded
+                ? 'flex-wrap pr-10'
+                : 'flex-nowrap overflow-hidden mask-[linear-gradient(to_right,#000_calc(100%-80px),transparent_calc(100%-28px))]'
+            }`}
+          >
             {REGIONS.map((r) => (
               <button key={r} type="button" onClick={() => setRegion(r)} className="shrink-0">
                 <Chip label={r} active={region === r} />
@@ -452,9 +459,9 @@ function WhereSection() {
             aria-label={expanded ? '지역 접기' : '지역 더보기'}
             aria-expanded={expanded}
             onClick={() => setExpanded((v) => !v)}
-            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-desk-line text-desk-muted"
+            className="absolute right-5 top-0 flex h-8 w-8 items-center justify-center rounded-full border border-desk-line bg-desk-surface text-desk-muted"
           >
-            <ChevronRight className={`h-4 w-4 ${expanded ? '-rotate-90' : 'rotate-90'}`} />
+            <ChevronDown className={`h-4 w-4 transition-transform ${expanded ? 'rotate-180' : ''}`} />
           </button>
         </div>
         <div className="grid grid-cols-2 gap-3 px-5">
@@ -653,7 +660,7 @@ function Footer() {
     <footer className="flex flex-col gap-3.5 px-5 pb-10 pt-12">
       <div className="flex items-center gap-1">
         <span className="text-[13px] font-bold text-desk-ink">공유데스크</span>
-        <ChevronRight className="h-4 w-4 text-desk-ink" />
+        <ChevronDown className="h-4.5 w-4.5 text-desk-ink" />
       </div>
       <div className="flex flex-col gap-5">
         <div className="flex flex-col gap-0.5 text-[11px] text-desk-soft">

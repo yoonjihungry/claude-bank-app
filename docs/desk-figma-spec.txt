@@ -1,0 +1,312 @@
+FRAME·Main_on [360x2860] fill=#ffffff
+  GROUP·Group [360x336] 
+    INSTANCE·Home Indicator [360x24] 
+      RECTANGLE·Home Indicator [128x5] r=100 fill=#000000
+    INSTANCE·Navigation [360x60] row gap=16 pad=8,0,8,0 fill=#ffffff
+      FRAME·Button [68x44] col gap=6
+        FRAME·lsicon:home-outline [20x20] 
+          VECTOR·Vector [16x16] 
+        TEXT·홈 [9x13] fill=#eb601c font=700/10 "홈"
+      FRAME·Button [68x44] col gap=6
+        FRAME·icon [20x20] 
+          VECTOR·Icon [16x16] 
+        TEXT·검색 [18x13] fill=#333333 font=500/10 "검색"
+      FRAME·Button [68x44] col gap=6
+        FRAME·humbleicons:calendar [20x20] 
+          GROUP·Group [16x16] 
+            VECTOR·Vector [16x5] 
+            VECTOR·Vector [8x3] 
+            VECTOR·Vector [16x10] 
+        TEXT·이용 내역 [37x13] fill=#333333 font=500/10 "이용 내역"
+      FRAME·Button [68x44] col gap=6
+        FRAME·icon [20x20] 
+          GROUP·Group 1 [18x17] 
+            VECTOR·Vector [9x9] 
+            VECTOR·Vector_2 [18x6] 
+        TEXT·마이페이지 [43x13] fill=#333333 font=500/10 "마이페이지"
+    INSTANCE·Footer [360x252] col gap=14 pad=50,20,40,20
+      FRAME·title [320x18] row gap=4
+        TEXT·공유데스크 [56x17] fill=#1a1a1a font=700/13 "공유데스크"
+        FRAME·arrow [18x18] 
+          VECTOR·Vector [8x4] 
+      FRAME·Frame [320x130] col gap=20
+        FRAME·Container [320x93] col gap=2
+          TEXT·대표 : 이용현 [320x17] fill=#777777 font=400/11 "대표 : 이용현"
+          TEXT·주소 : 서울 강남구 봉은사로37길 5, 4층 [320x17] fill=#777777 font=400/11 "주소 : 서울 강남구 봉은사로37길 5, 4층"
+          FRAME·Frame [219x17] row gap=4
+            TEXT·사업자 등록번호 : 584-88-02580 [149x17] fill=#777777 font=400/11 "사업자 등록번호 : 584-88-02580"
+            TEXT·사업자정보확인 [66x17] fill=#1a1a1a font=400/11 "사업자정보확인"
+          TEXT·통신판매업 신고번호 : 준비중 [320x17] fill=#777777 font=400/11 "통신판매업 신고번호 : 준비중"
+          TEXT·고객센터 : 1522-2038 · support@sharedesk.co.kr [320x17] fill=#777777 font=400/11 "고객센터 : 1522-2038 · support@sharedesk.co.kr"
+        FRAME·Frame [239x17] row gap=8
+          TEXT·회사소개 [38x17] fill=#777777 font=400/11 "회사소개"
+          LINE·Line [0x10] 
+          TEXT·이용약관 [38x17] fill=#777777 font=400/11 "이용약관"
+          LINE·Line [0x10] 
+          TEXT·개인정보 처리방침 [77x17] fill=#1a1a1a font=700/11 "개인정보 처리방침"
+          LINE·Line [0x10] 
+          TEXT·고객지원 [38x17] fill=#777777 font=400/11 "고객지원"
+  INSTANCE·Slide Container [1500x330] row gap=12
+    FRAME·01 [240x330] col gap=10 pad=26,24,26,24 r=12 fill=#000000
+      FRAME·txt [192x80] col gap=8
+        TEXT·판교 개발자의 코워킹 데스크 가이드 [192x56] fill=#ffffff font=700/22 "판교 개발자의
+코워킹 데스크 가이드"
+        TEXT·초몰입을 위한 나만의 워크스페이스 [192x16] fill=#ffffff font=400/12 "초몰입을 위한 나만의 워크스페이스"
+    FRAME·02 [240x330] col gap=10 pad=26,24,26,24 r=12 fill=#000000
+      FRAME·txt [192x80] col gap=8
+        TEXT·공유데스크 이렇게 고르세요 [192x56] fill=#ffffff font=700/22 "공유데스크
+이렇게 고르세요"
+        TEXT·강남권 데스크를 고르는 꿀팁 [192x16] fill=#ffffff font=400/12 "강남권 데스크를 고르는 꿀팁"
+    FRAME·03 [240x330] col gap=10 pad=26,24,26,24 r=12 fill=#000000
+      FRAME·txt [192x80] col gap=8
+        TEXT·크리에이터를 위한 감각적인 공간 [158x56] fill=#ffffff font=700/22 "크리에이터를 위한
+감각적인 공간"
+        TEXT·영감을 깨우는 나만의 워크스페이스 [192x16] fill=#ffffff font=400/12 "영감을 깨우는 나만의 워크스페이스"
+    FRAME·04 [240x330] col gap=10 pad=26,24,26,24 r=12 fill=#000000
+      FRAME·txt [192x80] col gap=8
+        TEXT·공유데스크 활용하는 5가지 방법 [192x56] fill=#ffffff font=700/22 "공유데스크 활용하는
+5가지 방법"
+        TEXT·같은 비용으로 더 잘쓰는 실전 팁 [192x16] fill=#ffffff font=400/12 "같은 비용으로 더 잘쓰는 실전 팁"
+    FRAME·05 [240x330] col gap=10 pad=26,24,26,24 r=12 fill=#000000
+      FRAME·txt [192x80] col gap=8
+        TEXT·사무실 임대 vs 공유데스크 [192x56] fill=#ffffff font=700/22 "사무실 임대
+vs 공유데스크"
+        TEXT·1인·소규모 기준 현실 계산 [192x16] fill=#ffffff font=400/12 "1인·소규모 기준 현실 계산"
+    FRAME·06 [240x330] col gap=10 pad=26,24,26,24 r=12 fill=#000000
+      FRAME·txt [192x80] col gap=8
+        TEXT·원격근무자를 위한 체크리스트 [192x56] fill=#ffffff font=700/22 "원격근무자를 위한
+체크리스트"
+        TEXT·생산성 높은 데스크를 고르는 방법 [192x16] fill=#ffffff font=400/12 "생산성 높은 데스크를 고르는 방법"
+  FRAME·banner [320x120] r=12 fill=#eb601c
+    ELLIPSE·Ellipse [130x130] fill=#ffffff
+    ELLIPSE·Ellipse [130x130] fill=#ffffff
+    FRAME·Container [41x24] row gap=2 pad=0,10,0,10 r=50 fill=#1a1a1a
+      TEXT·1 / 3 [21x14] fill=#ffffff font=400/11 "1 / 3"
+    FRAME·txt [205x51] col gap=4
+      TEXT·첫 달 50% 할인 진행 중 [205x29] fill=#ffffff font=700/18 "첫 달 50% 할인 진행 중"
+      TEXT·지금 가입하면 모든 데스크 BASIC 첫 달 반값 [205x18] fill=#ffffff font=500/12 "지금 가입하면 모든 데스크 BASIC 첫 달 반값"
+  INSTANCE·Button [320x46] row gap=10 r=10 fill=#ffffff
+    FRAME·Left Icon [12x12] 
+      VECTOR·Shape [11x11] fill=#006ffd
+      RECTANGLE·Fill [12x12] fill=#006ffd
+    TEXT·Button [133x18] fill=#555555 font=600/14 "공데AI 맞춤 추천 더보기"
+    FRAME·Right Icon [12x12] 
+      VECTOR·Shape [11x11] fill=#006ffd
+      RECTANGLE·Fill [12x12] fill=#006ffd
+  FRAME·맞춤추천 [360x271] col gap=14
+    FRAME·title [360x29] row gap=14 pad=0,20,0,20
+      TEXT·미현님을 위한 맞춤 추천 [169x29] fill=#1a1a1a font=700/18 "미현님을 위한 맞춤 추천"
+    FRAME·Slide Container [360x228] row gap=12 pad=0,0,0,20
+      INSTANCE·Frame [240x228] col gap=12
+        FRAME·Img [240x154] r=12 fill=#000000
+          RECTANGLE·unsplash:FV3GConVSss [428x285] 
+          INSTANCE·Component 1 [67x20] row gap=2 pad=0,6,0,6 r=4 fill=#dc5714
+            TEXT·TOP [24x15] fill=#ffffff font=600/11 "TOP"
+            TEXT·사장님 [29x15] fill=#ffffff font=600/11 "사장님"
+        FRAME·Container [240x62] col gap=4 pad=0,4,0,4
+          FRAME·txt [232x37] col gap=2
+            FRAME·Frame [174x18] row gap=8
+              TEXT·코워크라운지 성수점 [110x18] fill=#1a1a1a font=700/14 "코워크라운지 성수점"
+              LINE·Line [0x12] 
+              TEXT·데스크 5 [48x18] fill=#1a1a1a font=700/14 "데스크 5"
+            FRAME·info [232x17] row gap=2
+              TEXT·성수 [19x17] fill=#8c8c8c font=500/11 "성수"
+              TEXT·∙ [3x17] fill=#8c8c8c font=500/11 "∙"
+              TEXT·서울 송파구 올림픽로 269 [111x17] fill=#8c8c8c font=500/11 "서울 송파구 올림픽로 269"
+          FRAME·금액 [232x21] row gap=2
+            TEXT·265,000 [66x21] fill=#1a1a1a font=700/16 "265,000"
+            TEXT·원 [13x19] fill=#1a1a1a font=500/13 "원"
+      INSTANCE·Frame [240x228] col gap=12
+        FRAME·Img [240x154] r=12 fill=#000000
+          RECTANGLE·unsplash:FV3GConVSss [428x285] 
+          INSTANCE·Component 1 [67x20] row gap=2 pad=0,6,0,6 r=4 fill=#dc5714
+            TEXT·TOP [24x15] fill=#ffffff font=600/11 "TOP"
+            TEXT·사장님 [29x15] fill=#ffffff font=600/11 "사장님"
+        FRAME·Container [240x62] col gap=4 pad=0,4,0,4
+          FRAME·txt [232x37] col gap=2
+            FRAME·Frame [174x18] row gap=8
+              TEXT·코워크라운지 성수점 [110x18] fill=#1a1a1a font=700/14 "코워크라운지 성수점"
+              LINE·Line [0x12] 
+              TEXT·데스크 5 [48x18] fill=#1a1a1a font=700/14 "데스크 5"
+            FRAME·info [232x17] row gap=2
+              TEXT·성수 [19x17] fill=#8c8c8c font=500/11 "성수"
+              TEXT·∙ [3x17] fill=#8c8c8c font=500/11 "∙"
+              TEXT·서울 송파구 올림픽로 269 [111x17] fill=#8c8c8c font=500/11 "서울 송파구 올림픽로 269"
+          FRAME·금액 [232x21] row gap=2
+            TEXT·265,000 [66x21] fill=#1a1a1a font=700/16 "265,000"
+            TEXT·원 [13x19] fill=#1a1a1a font=500/13 "원"
+  FRAME·지금인기데스크 [360x271] col gap=14
+    FRAME·title [360x29] row gap=14 pad=0,20,0,20
+      TEXT·지금 인기 데스크 [118x29] fill=#1a1a1a font=700/18 "지금 인기 데스크"
+    FRAME·Slide Container [360x228] row gap=12 pad=0,0,0,20
+      INSTANCE·Frame [240x228] col gap=12
+        FRAME·Img [240x154] r=12 fill=#000000
+          RECTANGLE·unsplash:FV3GConVSss [428x285] 
+          INSTANCE·Component 1 [67x20] row gap=2 pad=0,6,0,6 r=4 fill=#dc5714
+            TEXT·TOP [24x15] fill=#ffffff font=600/11 "TOP"
+            TEXT·사장님 [29x15] fill=#ffffff font=600/11 "사장님"
+        FRAME·Container [240x62] col gap=4 pad=0,4,0,4
+          FRAME·txt [232x37] col gap=2
+            FRAME·Frame [174x18] row gap=8
+              TEXT·코워크라운지 성수점 [110x18] fill=#1a1a1a font=700/14 "코워크라운지 성수점"
+              LINE·Line [0x12] 
+              TEXT·데스크 5 [48x18] fill=#1a1a1a font=700/14 "데스크 5"
+            FRAME·info [232x17] row gap=2
+              TEXT·성수 [19x17] fill=#8c8c8c font=500/11 "성수"
+              TEXT·∙ [3x17] fill=#8c8c8c font=500/11 "∙"
+              TEXT·서울 송파구 올림픽로 269 [111x17] fill=#8c8c8c font=500/11 "서울 송파구 올림픽로 269"
+          FRAME·금액 [232x21] row gap=2
+            TEXT·265,000 [66x21] fill=#1a1a1a font=700/16 "265,000"
+            TEXT·원 [13x19] fill=#1a1a1a font=500/13 "원"
+      INSTANCE·Frame [240x228] col gap=12
+        FRAME·Img [240x154] r=12 fill=#000000
+          RECTANGLE·unsplash:FV3GConVSss [428x285] 
+          INSTANCE·Component 1 [67x20] row gap=2 pad=0,6,0,6 r=4 fill=#dc5714
+            TEXT·TOP [24x15] fill=#ffffff font=600/11 "TOP"
+            TEXT·사장님 [29x15] fill=#ffffff font=600/11 "사장님"
+        FRAME·Container [240x62] col gap=4 pad=0,4,0,4
+          FRAME·txt [232x37] col gap=2
+            FRAME·Frame [174x18] row gap=8
+              TEXT·코워크라운지 성수점 [110x18] fill=#1a1a1a font=700/14 "코워크라운지 성수점"
+              LINE·Line [0x12] 
+              TEXT·데스크 5 [48x18] fill=#1a1a1a font=700/14 "데스크 5"
+            FRAME·info [232x17] row gap=2
+              TEXT·성수 [19x17] fill=#8c8c8c font=500/11 "성수"
+              TEXT·∙ [3x17] fill=#8c8c8c font=500/11 "∙"
+              TEXT·서울 송파구 올림픽로 269 [111x17] fill=#8c8c8c font=500/11 "서울 송파구 올림픽로 269"
+          FRAME·금액 [232x21] row gap=2
+            TEXT·265,000 [66x21] fill=#1a1a1a font=700/16 "265,000"
+            TEXT·원 [13x19] fill=#1a1a1a font=500/13 "원"
+  FRAME·search [320x141] col gap=14
+    FRAME·Frame [320x95] col gap=14
+      FRAME·title [320x29] row gap=14
+        TEXT·공데 이용하기 [98x29] fill=#1a1a1a font=700/18 "공데 이용하기"
+      FRAME·search [320x52] row gap=16 pad=0,16,0,16 r=10
+        TEXT·지역과 예산, 인원을 검색해주세요 [179x20] fill=#8c8c8c font=400/14 "지역과 예산, 인원을 검색해주세요"
+        FRAME·icon [20x20] 
+          VECTOR·Icon [16x16] 
+    FRAME·인기 지역 [320x32] row gap=10 pad=0,4,0,4
+      TEXT·인기 지역 [45x17] fill=#eb601c font=500/12 "인기 지역"
+      FRAME·Frame [188x32] row gap=6
+        FRAME·Frame [55x32] row gap=10 pad=0,16,0,16 r=20
+          TEXT·강남 [23x17] fill=#555555 font=500/13 "강남"
+        FRAME·Frame [66x32] row gap=10 pad=0,16,0,16 r=20
+          TEXT·여의도 [34x17] fill=#555555 font=500/13 "여의도"
+        FRAME·Frame [55x32] row gap=10 pad=0,16,0,16 r=20
+          TEXT·판교 [23x17] fill=#555555 font=500/13 "판교"
+  FRAME·Main_banner [320x320] col gap=24 pad=26,24,20,24 r=20
+    FRAME·txt [272x81] col gap=8
+      TEXT·한눈에 비교하는 등급별 데스크 가이드 [272x56] fill=#ffffff font=700/22 "한눈에 비교하는
+등급별 데스크 가이드"
+      TEXT·베이직부터 프리미엄까지 라인업 확인 [272x17] fill=#ffffff font=400/13 "베이직부터 프리미엄까지 라인업 확인"
+    FRAME·Container [41x24] row gap=2 pad=0,10,0,10 r=50 fill=#1a1a1a
+      TEXT·1 / 3 [21x14] fill=#ffffff font=400/11 "1 / 3"
+  FRAME·Header [360x60] row pad=0,20,0,20 fill=#ffffff
+    FRAME·proicons:bell-dot [24x24] 
+      GROUP·Group [17x19] 
+        VECTOR·Vector [17x16] 
+        VECTOR·Vector [17x16] 
+        VECTOR·Vector [4x0] 
+  INSTANCE·Bars / Status Bar / iPhone / Light [360x44] 
+    FRAME·Frame [67x11] row gap=5
+      BOOLEAN_OPERATION·Cellular Connection [17x11] fill=#000000
+        VECTOR·Cellular-Connection-path [3x4] fill=#000000
+        VECTOR·Cellular-Connection-path [3x6] fill=#000000
+        VECTOR·Cellular-Connection-path [3x8] fill=#000000
+        VECTOR·Cellular-Connection-path [3x11] fill=#000000
+      BOOLEAN_OPERATION·Wifi [15x11] fill=#000000
+        VECTOR·Wifi-path [15x5] fill=#000000
+        VECTOR·Wifi-path [10x4] fill=#000000
+        VECTOR·Wifi-path [5x3] fill=#000000
+      GROUP·Battery [24x11] 
+        RECTANGLE·Border [22x11] r=2.6666667461395264
+        VECTOR·Cap [1x4] fill=#000000
+        RECTANGLE·Capacity [18x7] r=1.3333333730697632 fill=#000000
+    FRAME·Bars / Status Bar / iPhone / Time - Light [50x21] 
+      TEXT·Time [54x18] fill=#000000 font=600/15 "09:41"
+  FRAME·어디서 일하세요 [360x657] col gap=24
+    FRAME·Frame [360x601] col gap=14
+      FRAME·Title [360x29] row gap=14 pad=0,20,0,20
+        TEXT·어디서 일하세요? [123x29] fill=#1a1a1a font=700/18 "어디서 일하세요?"
+      FRAME·Container [360x118] row pad=0,20,10,20
+        FRAME·Frame [288x108] row gap=6
+          FRAME·Frame [55x32] row gap=10 pad=0,16,0,16 r=20 fill=#eb601c
+            TEXT·전체 [23x17] fill=#ffffff font=500/13 "전체"
+          FRAME·Frame [55x32] row gap=10 pad=0,16,0,16 r=20
+            TEXT·강남 [23x17] fill=#555555 font=500/13 "강남"
+          FRAME·Frame [55x32] row gap=10 pad=0,16,0,16 r=20
+            TEXT·판교 [23x17] fill=#555555 font=500/13 "판교"
+          FRAME·Frame [66x32] row gap=10 pad=0,16,0,16 r=20
+            TEXT·여의도 [34x17] fill=#555555 font=500/13 "여의도"
+          FRAME·Frame [55x32] row gap=10 pad=0,16,0,16 r=20
+            TEXT·성수 [23x17] fill=#555555 font=500/13 "성수"
+          FRAME·Frame [55x32] row gap=10 pad=0,16,0,16 r=20
+            TEXT·홍대 [23x17] fill=#555555 font=500/13 "홍대"
+          FRAME·Frame [55x32] row gap=10 pad=0,16,0,16 r=20
+            TEXT·종로 [23x17] fill=#555555 font=500/13 "종로"
+          FRAME·Frame [55x32] row gap=10 pad=0,16,0,16 r=20
+            TEXT·마포 [23x17] fill=#555555 font=500/13 "마포"
+          FRAME·Frame [55x32] row gap=10 pad=0,16,0,16 r=20
+            TEXT·강서 [23x17] fill=#555555 font=500/13 "강서"
+        FRAME·Button - 탭 확장 [32x32] row r=100 fill=#ffffff
+          FRAME·Text [20x32] 
+          FRAME·arrow [24x24] 
+            VECTOR·Vector [10x5] 
+      FRAME·Frame [360x426] row gap=12
+        INSTANCE·Frame [154x203] col gap=12
+          FRAME·Img [154x154] r=12 fill=#000000
+            RECTANGLE·declan-sun-nUUmpwTbxGQ-unsplash 1 [324x216] 
+            FRAME·mynaui:heart [16x16] 
+              VECTOR·Vector [14x13] fill=#eb601c
+          FRAME·Container [154x37] col gap=2 pad=0,4,0,4
+            TEXT·위코워킹 강남점 [146x18] fill=#1a1a1a font=700/14 "위코워킹 강남점"
+            FRAME·info [146x17] row gap=2
+              TEXT·관심 1,200 [48x17] fill=#8c8c8c font=500/11 "관심 1,200"
+              TEXT·∙ [3x17] fill=#8c8c8c font=500/11 "∙"
+              TEXT·리뷰 20 [35x17] fill=#8c8c8c font=500/11 "리뷰 20"
+        INSTANCE·Frame [154x203] col gap=12
+          FRAME·Img [154x154] r=12 fill=#000000
+            RECTANGLE·declan-sun-nUUmpwTbxGQ-unsplash 1 [324x216] 
+            FRAME·mynaui:heart [16x16] 
+              VECTOR·Vector [14x13] fill=#ffffff
+          FRAME·Container [154x37] col gap=2 pad=0,4,0,4
+            TEXT·위코워킹 강남점 [146x18] fill=#1a1a1a font=700/14 "오피스버드 역삼점"
+            FRAME·info [146x17] row gap=2
+              TEXT·관심 1,200 [41x17] fill=#8c8c8c font=500/11 "관심 200"
+              TEXT·∙ [3x17] fill=#8c8c8c font=500/11 "∙"
+              TEXT·리뷰 20 [28x17] fill=#8c8c8c font=500/11 "리뷰 5"
+        INSTANCE·Frame [154x203] col gap=12
+          FRAME·Img [154x154] r=12 fill=#000000
+            RECTANGLE·declan-sun-nUUmpwTbxGQ-unsplash 1 [324x216] 
+            FRAME·mynaui:heart [16x16] 
+              VECTOR·Vector [14x13] fill=#ffffff
+          FRAME·Container [154x37] col gap=2 pad=0,4,0,4
+            TEXT·위코워킹 강남점 [146x18] fill=#1a1a1a font=700/14 "패스트파이브 서초점"
+            FRAME·info [146x17] row gap=2
+              TEXT·관심 1,200 [48x17] fill=#8c8c8c font=500/11 "관심 1,846"
+              TEXT·∙ [3x17] fill=#8c8c8c font=500/11 "∙"
+              TEXT·리뷰 20 [40x17] fill=#8c8c8c font=500/11 "리뷰 135"
+        INSTANCE·Frame [154x203] col gap=12
+          FRAME·Img [154x154] r=12 fill=#000000
+            RECTANGLE·declan-sun-nUUmpwTbxGQ-unsplash 1 [324x216] 
+            FRAME·mynaui:heart [16x16] 
+              VECTOR·Vector [14x13] fill=#ffffff
+          FRAME·Container [154x37] col gap=2 pad=0,4,0,4
+            TEXT·위코워킹 강남점 [146x18] fill=#1a1a1a font=700/14 "허브스페이스 잠실점"
+            FRAME·info [146x17] row gap=2
+              TEXT·관심 1,200 [33x17] fill=#8c8c8c font=500/11 "관심 16"
+              TEXT·∙ [3x17] fill=#8c8c8c font=500/11 "∙"
+              TEXT·리뷰 20 [33x17] fill=#8c8c8c font=500/11 "리뷰 12"
+    FRAME·Container [161x32] row gap=8
+      FRAME·Frame 2055249192 [40x32] col gap=10 r=8
+        FRAME·arrow [24x24] 
+          VECTOR·Vector [5x10] 
+      FRAME·Container [65x24] row
+        FRAME·Button [30x24] row
+          TEXT·01 [15x17] fill=#333333 font=600/13 "01"
+        TEXT·/ [5x17] fill=#b5b5b5 font=600/13 "/"
+        FRAME·Button [30x24] row
+          TEXT·03 [17x17] fill=#b5b5b5 font=600/13 "03"
+      FRAME·Frame 2055249191 [40x32] col gap=10 r=8
+        FRAME·arrow [24x24] 
+          VECTOR·Vector [5x10] 

@@ -173,6 +173,20 @@ interface Budget {
 - **독립 전체화면 라우트**: 자체 헤더/내비/푸터를 가진 완결형 화면은 `AppShell`의 `BARE_ROUTES`에 등록해
   공통 셸(💰가계부 헤더+탭바)과 전역 Context 없이 렌더한다(현재 `/desk`).
 
+## Figma 시안 (`/desk`)
+
+`/desk`는 피그마 시안을 이식한 화면이다. **시안이 Source of Truth이므로 눈대중으로 고치지 말고 항상 노드를 읽어서 대조한다.**
+
+- **fileKey**: `OjcyAOZ0bY7bFhQxGKaQig` (파일명 "메모장")
+- **nodeId**: `685:1814` (프레임 "Main_on", 360×2860)
+- URL: `https://figma.com/design/OjcyAOZ0bY7bFhQxGKaQig/메모장?node-id=685-1814`
+- 조회: Figma MCP `get_figma_data`(레이아웃·텍스트·색) / `download_figma_images`(아이콘·사진 에셋)
+
+**시안에 없는 것을 지어내지 않는다.** `get_figma_data`는 벡터 아이콘의 도형 데이터를 주지 않는다.
+아이콘이 필요하면 `download_figma_images`로 실제 에셋을 받는다. 노드에 없는 요소(아이콘·장식·문구)를
+"있을 법하니까" 추가하지 않는다 — 시안에 그 자식 노드가 없으면 화면에도 없어야 한다.
+어떤 이유로든 시안대로 못 옮긴 부분이 생기면 임의로 메우지 말고 **먼저 사용자에게 알린다.**
+
 ## Styling Rules
 - **색상은 디자인 토큰만 사용한다**: `src/styles/tokens.css`(Source of Truth)에 정의된 토큰의 Tailwind
   유틸리티(`bg-primary`, `text-income` 등)만 쓰고, HEX/`rgb()` 하드코딩이나 Tailwind 기본 팔레트
