@@ -2,6 +2,27 @@
 
 의미 있는 변경 사항을 "날짜 — 무엇을 바꿨는지" 형식으로 최신순으로 기록한다.
 
+## 2026-07-20 — 프로덕션 Google 로그인 복구 (Vercel 환경변수 누락)
+
+**코드 변경 없음. 원인은 전부 Vercel/Google 콘솔 설정이었다.** 다만 화면만으로는 진단이 불가능했던
+케이스라 과정을 남긴다.
+
+- **로컬**: `redirect_uri_mismatch`. dev 서버 포트를 3100으로 고정한 뒤 구글 콘솔에
+  `http://localhost:3100/api/auth/callback/google`을 등록하지 않아서였다. 프로덕션 쪽은
+  `https://claude-bank-app-eta.vercel.app/api/auth/callback/google`.
+- **프로덕션**: Auth.js의 "Server error / problem with the server configuration" 화면은 원인을
+  알려주지 않는다. **Vercel 사이드바 Logs**의 `[auth][details]`에 실제 사유가 찍힌다. 여기서
+  `invalid_client`(시크릿이 틀림) → 값 교체 후 한 번 성공 → 다시 `client_secret is missing`
+  (시크릿이 아예 없음)으로 증상이 옮겨갔다.
+- **함정**: Vercel 환경변수 목록에 `AUTH_GOOGLE_SECRET`이 **보이는데도 런타임에는 값이 없었다.**
+  Sensitive 변수는 값을 되읽을 수 없어 "있어 보이는데 비어 있는" 상태가 화면상 정상과 구분되지 않는다.
+  기존 항목 Edit으로는 갱신되지 않았고, **삭제 후 재생성**해야 실제로 실렸다.
+- **진단 방법**: 임시 라우트 `/api/debug-env`로 런타임의 환경변수 존재 여부·길이·배포 ID를 찍어
+  `present: false`를 확인하고 나서야 원인이 특정됐다(확인 후 제거). 자격증명 쌍 자체의 유효성은
+  가짜 code로 구글 토큰 엔드포인트를 쳐서 판별할 수 있다 — `invalid_grant`면 정상, `invalid_client`면 불량.
+- 처음에 "PC는 되는데 모바일만 안 된다"로 보였던 것도 브라우저 차이가 아니라, 시크릿이 빠진 배포를
+  만난 것이었다.
+
 ## 2026-07-20 — 버튼에 손가락 커서 복구 (Tailwind v4 preflight 대응, 앱 전역)
 
 `/desk`의 지역 펼치기 버튼에 마우스를 올려도 커서가 안 바뀐다는 지적에서 출발했는데, 원인은 그
