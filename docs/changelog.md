@@ -2,6 +2,19 @@
 
 의미 있는 변경 사항을 "날짜 — 무엇을 바꿨는지" 형식으로 최신순으로 기록한다.
 
+## 2026-07-20 — 버튼에 손가락 커서 복구 (Tailwind v4 preflight 대응, 앱 전역)
+
+`/desk`의 지역 펼치기 버튼에 마우스를 올려도 커서가 안 바뀐다는 지적에서 출발했는데, 원인은 그
+버튼이 아니라 **Tailwind v4의 preflight가 `button`/`[role=button]`에 `cursor: default`를 주도록
+바뀐 것**이었다(v3까지는 `pointer`). 전수 확인 결과 이 저장소에서 `cursor-pointer`를 명시한 곳은
+`TransactionForm`의 label 하나뿐이라, **가계부 화면을 포함한 앱 전체의 모든 버튼**이 같은 상태였다.
+
+- `src/styles/index.css`의 base 레이어에 `button:not(:disabled)`·`[role="button"]:not(:disabled)`
+  → `cursor: pointer`, 비활성 버튼 → `cursor: not-allowed`를 추가했다.
+- base 레이어라 개별 요소가 `cursor-default`/`cursor-grab` 유틸리티로 덮어쓴 곳
+  (`LoginSheet`·`HeaderAuth`의 배경 클릭 영역, `/desk` 캐러셀 트랙)은 그대로 유지된다.
+- 검증: 빌드된 `layout.css`에 규칙이 포함된 것을 응답으로 확인했다.
+
 ## 2026-07-20 — /desk 새로 등록된 데스크 카드 재배치 + 그리드 페이지 슬라이드 + 푸터 접힘
 
 **이번 작업은 시안 노드를 읽지 못한 채 진행했다.** CLAUDE.md에 적힌 nodeId `685:1814`가 파일에서

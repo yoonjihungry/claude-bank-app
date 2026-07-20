@@ -57,3 +57,18 @@
   --color-desk-surface: hsl(var(--desk-surface));
   --color-desk-on-dark: hsl(var(--desk-on-dark));
 }
+
+/* Tailwind v4의 preflight는 button/[role=button]에 cursor: default를 준다(v3까지는 pointer였다).
+   클릭 가능한 요소에 손가락 커서가 안 나오는 게 자연스럽지 않아 v3 동작으로 되돌린다.
+   비활성 버튼은 예외로 두고 not-allowed를 보여준다. */
+@layer base {
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+
+  button:disabled,
+  [role="button"][aria-disabled="true"] {
+    cursor: not-allowed;
+  }
+}
