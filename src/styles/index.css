@@ -46,6 +46,8 @@
   --color-desk-primary: hsl(var(--desk-primary));
   --color-desk-accent: hsl(var(--desk-accent));
   --color-desk-accent-strong: hsl(var(--desk-accent-strong));
+  --color-desk-accent-soft: hsl(var(--desk-accent-soft));
+  --color-desk-badge: hsl(var(--desk-badge));
   --color-desk-ink: hsl(var(--desk-ink));
   --color-desk-body: hsl(var(--desk-body));
   --color-desk-muted: hsl(var(--desk-muted));

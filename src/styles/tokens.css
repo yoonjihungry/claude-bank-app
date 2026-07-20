@@ -51,6 +51,8 @@
   --desk-primary: 214 100% 50%;      /* #006ffd 파랑 — CTA 아이콘/포인트 */
   --desk-accent: 20 84% 52%;         /* #eb601c 오렌지 — 활성 탭/칩·프로모 배너 */
   --desk-accent-strong: 20 83% 47%;  /* #dc5714 진한 오렌지 — TOP 배지 */
+  --desk-accent-soft: 24 100% 92%;   /* #ffe6d6 연한 오렌지 — PREMIUM 배지 배경 */
+  --desk-badge: 0 0% 93%;            /* #eeeeee 연회색 — BASIC 등급 배지 배경 */
   --desk-ink: 0 0% 10%;              /* #1a1a1a — 제목 텍스트 */
   --desk-body: 0 0% 20%;             /* #333333 — 본문/비활성 탭 */
   --desk-muted: 0 0% 33%;            /* #555555 — 칩 텍스트 */

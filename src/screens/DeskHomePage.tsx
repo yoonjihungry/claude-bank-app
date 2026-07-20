@@ -20,6 +20,7 @@ interface DeskItem {
   address: string;
   price: string;
   top?: boolean;
+  grade?: string; // 'BASIC' | 'STANDARD' | 'PREMIUM' — '새로 등록된 데스크' 리스트 배지
 }
 
 // sharedesk.co.kr의 "지금 인기 데스크"(신뢰등급 높은 순) 구성을 참고한 샘플 8건.
@@ -47,6 +48,13 @@ const RECOMMENDED_DESKS: DeskItem[] = [
   { name: '데일리워크 광화문점', desks: '스탠다드석 #3', area: '광화문', address: '서울 종로구 세종대로 175', price: '405,000' },
 ];
 
+// '새로 등록된 데스크' 세로 리스트 샘플. 카드마다 등급 배지(grade)가 붙는다.
+const NEW_DESKS: DeskItem[] = [
+  { name: '허브스페이스 잠실점', desks: '쉐어룸 데스크 5', area: '잠실', address: '서울 송파구 올림픽로 269', price: '265,000', top: true, grade: 'BASIC' },
+  { name: '허브스페이스 잠실점', desks: '쉐어룸 데스크 4', area: '잠실', address: '서울 송파구 올림픽로 269', price: '265,000', grade: 'PREMIUM' },
+  { name: '허브스페이스 잠실점', desks: '쉐어룸 데스크 3', area: '잠실', address: '서울 송파구 올림픽로 269', price: '265,000', top: true, grade: 'BASIC' },
+];
+
 interface GridItem {
   name: string;
   likes: string;
@@ -54,15 +62,26 @@ interface GridItem {
   liked?: boolean;
 }
 
+// '어디서 일하세요?' 그리드 샘플. 4건씩 3페이지로 끊어 보여주므로 12건을 둔다.
 const GRID_DESKS: GridItem[] = [
   { name: '위코워킹 강남점', likes: '1,200', reviews: '20', liked: true },
   { name: '오피스버드 역삼점', likes: '200', reviews: '5' },
   { name: '패스트파이브 서초점', likes: '1,846', reviews: '135' },
   { name: '허브스페이스 잠실점', likes: '16', reviews: '12' },
+  { name: '코워크라운지 성수점', likes: '842', reviews: '61' },
+  { name: '데일리워크 광화문점', likes: '95', reviews: '8' },
+  { name: '스페이스온 판교점', likes: '2,310', reviews: '188' },
+  { name: '워크베이스 여의도점', likes: '430', reviews: '27' },
+  { name: '누크오피스 홍대점', likes: '1,058', reviews: '74' },
+  { name: '더데스크 종로점', likes: '61', reviews: '9' },
+  { name: '플랫폼워크 마포점', likes: '736', reviews: '52' },
+  { name: '리버뷰데스크 강서점', likes: '148', reviews: '15' },
 ];
 
+// 그리드 한 페이지에 보여주는 카드 수(2열 × 2행)
+const GRID_PAGE_SIZE = 4;
+
 const REGIONS = ['전체', '강남', '판교', '여의도', '성수', '홍대', '종로', '마포', '강서'];
-const POPULAR_REGIONS = ['강남', '여의도', '판교'];
 
 const ARTICLES: { title: string; subtitle: string }[] = [
   { title: '판교 개발자의\n코워킹 데스크 가이드', subtitle: '초몰입을 위한 나만의 워크스페이스' },
@@ -100,7 +119,7 @@ const UserIcon = ({ className }: IconProps) => (
   </svg>
 );
 const BellIcon = ({ className }: IconProps) => (
-  <svg viewBox="0 0 24 24" fill="none" className={className} aria-hidden>
+  <svg viewBox="2 2 20 20" fill="none" className={className} aria-hidden>
     <path d="M6 9a6 6 0 0 1 12 0c0 3.5 1 5 1.5 5.5H4.5C5 14 6 12.5 6 9Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
     <path d="M10 18a2 2 0 0 0 4 0" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
     <circle cx="18" cy="6" r="2.5" fill="hsl(var(--desk-accent))" />
@@ -125,6 +144,11 @@ const ChevronDown = ({ className }: IconProps) => (
 const HeartIcon = ({ className, filled }: IconProps & { filled?: boolean }) => (
   <svg viewBox="0 0 16 16" fill={filled ? 'currentColor' : 'none'} className={className} aria-hidden>
     <path d="M8 13.5S2 10 2 5.9A3.4 3.4 0 0 1 8 4a3.4 3.4 0 0 1 6 1.9C14 10 8 13.5 8 13.5Z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" />
+  </svg>
+);
+const PlusIcon = ({ className }: IconProps) => (
+  <svg viewBox="0 0 20 20" fill="none" className={className} aria-hidden>
+    <path d="M10 4v12M4 10h12" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
   </svg>
 );
 const ImagePlaceholderIcon = ({ className }: IconProps) => (
@@ -219,7 +243,8 @@ function AutoCarousel({
 // ── 섹션들 ─────────────────────────────────────────────────────────────
 function Header() {
   return (
-    <header className="flex h-[60px] items-center justify-end bg-desk-surface px-5">
+    <header className="flex h-[60px] items-center justify-between bg-desk-surface px-5">
+      <span className="text-[20px] font-extrabold tracking-tight text-desk-accent">GONGDE</span>
       <button type="button" aria-label="알림" className="text-desk-ink">
         <BellIcon className="h-6 w-6" />
       </button>
@@ -239,7 +264,7 @@ function MainBanner() {
     <section className="px-5">
       <AutoCarousel
         count={BANNERS.length}
-        className="h-[320px] rounded-[20px] bg-desk-ink"
+        className="aspect-320/280 rounded-[20px] bg-desk-ink"
         indicatorClassName="bottom-5 right-6"
       >
         {(i) => {
@@ -257,34 +282,6 @@ function MainBanner() {
           );
         }}
       </AutoCarousel>
-    </section>
-  );
-}
-
-function SearchSection() {
-  const [query, setQuery] = useState('');
-  return (
-    <section className="flex flex-col gap-3.5 px-5">
-      <h2 className="text-[18px] font-bold text-desk-ink">공데 이용하기</h2>
-      <div className="flex h-[52px] items-center justify-between rounded-[10px] border border-desk-line px-4 focus-within:border-desk-primary">
-        <input
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder="지역과 예산, 인원을 검색해주세요"
-          className="w-full bg-transparent text-[14px] text-desk-ink outline-none placeholder:text-desk-hint"
-        />
-        <SearchIcon className="h-5 w-5 shrink-0 text-desk-hint" />
-      </div>
-      <div className="flex items-center gap-2.5 px-1">
-        <span className="shrink-0 text-[12px] font-medium text-desk-accent">인기 지역</span>
-        <div className="flex gap-1.5">
-          {POPULAR_REGIONS.map((r) => (
-            <button key={r} type="button" onClick={() => setQuery(r)}>
-              <Chip label={r} active={query === r} />
-            </button>
-          ))}
-        </div>
-      </div>
     </section>
   );
 }
@@ -387,6 +384,82 @@ function DeskCarousel({ title, items }: { title: string; items: DeskItem[] }) {
   );
 }
 
+/**
+ * '새로 등록된 데스크' 리스트의 가로형 카드 — 좌측 세로형 썸네일 + 우측 정보 세로 스택.
+ * 우측은 위에서부터 배지 → 이름/좌석(2줄) → 지역·주소 → 가격 → 찜/담기 순으로 쌓인다.
+ */
+function NewDeskCard({ item }: { item: DeskItem }) {
+  const [liked, setLiked] = useState(false);
+  const isPremium = item.grade === 'PREMIUM';
+  return (
+    <article className="flex gap-3.5 px-5">
+      <ImgPlaceholder className="h-[146px] w-30 shrink-0 rounded-xl" />
+      <div className="flex min-w-0 flex-1 flex-col">
+        <div className="flex items-center gap-1.5">
+          {item.top && (
+            <span className="inline-flex items-center gap-0.5 rounded bg-desk-accent-strong px-1.5 py-0.5 text-[11px] font-semibold text-desk-on-dark">
+              <span>TOP</span>
+              <span>사장님</span>
+            </span>
+          )}
+          {item.grade && (
+            <span
+              className={`inline-flex items-center rounded px-1.5 py-0.5 text-[11px] font-semibold ${
+                isPremium ? 'bg-desk-accent-soft text-desk-accent' : 'bg-desk-badge text-desk-muted'
+              }`}
+            >
+              {item.grade}
+            </span>
+          )}
+        </div>
+        {/* 이름과 좌석명은 구분선 없이 두 줄로 쌓인다 */}
+        <h3 className="mt-2.5 truncate text-[15px] font-bold leading-[1.4] text-desk-ink">{item.name}</h3>
+        <p className="truncate text-[15px] font-bold leading-[1.4] text-desk-ink">{item.desks}</p>
+        <div className="mt-1 flex items-center gap-1 text-[11px] font-medium text-desk-hint">
+          <span className="shrink-0">{item.area}</span>
+          <span>∙</span>
+          <span className="truncate">{item.address}</span>
+        </div>
+        <div className="mt-1.5 flex items-baseline gap-0.5">
+          <span className="text-[18px] font-bold text-desk-ink">{item.price}</span>
+          <span className="text-[13px] font-medium text-desk-ink">원</span>
+        </div>
+        <div className="mt-2.5 flex items-center gap-2">
+          <button
+            type="button"
+            aria-label={liked ? '찜 해제' : '찜'}
+            aria-pressed={liked}
+            onClick={() => setLiked((v) => !v)}
+            className={liked ? 'text-desk-accent' : 'text-desk-body'}
+          >
+            <HeartIcon className="h-[18px] w-[18px]" filled={liked} />
+          </button>
+          <button
+            type="button"
+            aria-label="담기"
+            className="flex h-[18px] w-[18px] items-center justify-center rounded-full border border-desk-line text-desk-body"
+          >
+            <PlusIcon className="h-3 w-3" />
+          </button>
+        </div>
+      </div>
+    </article>
+  );
+}
+
+function NewDesksSection() {
+  return (
+    <section className="flex flex-col gap-3.5">
+      <h2 className="px-5 text-[18px] font-bold text-desk-ink">새로 등록된 데스크</h2>
+      <div className="flex flex-col gap-5">
+        {NEW_DESKS.map((it) => (
+          <NewDeskCard key={`${it.name}-${it.desks}-${it.grade}`} item={it} />
+        ))}
+      </div>
+    </section>
+  );
+}
+
 function AiCta() {
   return (
     <section className="px-5">
@@ -411,7 +484,7 @@ function WhereGridCard({ item }: { item: GridItem }) {
           aria-label={liked ? '관심 해제' : '관심'}
           aria-pressed={liked}
           onClick={() => setLiked((v) => !v)}
-          className={`absolute right-2 top-2 ${liked ? 'text-desk-accent' : 'text-desk-on-dark'}`}
+          className={`absolute right-2.5 bottom-2.5 ${liked ? 'text-desk-accent' : 'text-desk-on-dark'}`}
         >
           <HeartIcon className="h-4 w-4" filled={liked} />
         </button>
@@ -432,7 +505,11 @@ function WhereSection() {
   const [region, setRegion] = useState(REGIONS[0]);
   const [expanded, setExpanded] = useState(false);
   const [page, setPage] = useState(1);
-  const totalPages = 3;
+  const totalPages = Math.ceil(GRID_DESKS.length / GRID_PAGE_SIZE);
+  // 페이지별로 4건씩 잘라 미리 트랙에 깔아둔다 — 화살표를 누르면 트랙이 가로로 밀린다.
+  const pages = Array.from({ length: totalPages }, (_, p) =>
+    GRID_DESKS.slice(p * GRID_PAGE_SIZE, (p + 1) * GRID_PAGE_SIZE),
+  );
   return (
     <section className="flex flex-col gap-6">
       <div className="flex flex-col gap-3.5">
@@ -464,10 +541,24 @@ function WhereSection() {
             <ChevronDown className={`h-4 w-4 transition-transform ${expanded ? 'rotate-180' : ''}`} />
           </button>
         </div>
-        <div className="grid grid-cols-2 gap-3 px-5">
-          {GRID_DESKS.map((it) => (
-            <WhereGridCard key={it.name} item={it} />
-          ))}
+        {/* 좌우 여백(px-5)은 트랙이 아니라 각 페이지가 들고 있어야 한다.
+            overflow는 padding box 기준으로 잘리기 때문에, 바깥에 px-5를 주면
+            넘어가는 페이지가 여백 위로 비쳐 보인다. */}
+        <div className="overflow-hidden">
+          <div
+            className="flex"
+            style={{ transform: `translateX(-${(page - 1) * 100}%)`, transition: SLIDE_TRANSITION }}
+          >
+            {pages.map((items, i) => (
+              <div key={i} className="w-full shrink-0 px-5" aria-hidden={i !== page - 1}>
+                <div className="grid grid-cols-2 gap-3">
+                  {items.map((it) => (
+                    <WhereGridCard key={it.name} item={it} />
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
       {/* 페이지네이션 */}
@@ -655,34 +746,50 @@ function ArticleSlides() {
   );
 }
 
+/**
+ * 푸터 — 접힘이 기본이고 화살표를 누르면 사업자 정보가 펼쳐진다.
+ * 접힘(시안 "Main")에는 상호+화살표와 링크 줄만 남고, 펼침이 "Main_on" 상태다.
+ * 높이 애니메이션은 grid-rows 0fr→1fr로 준다 — 내용 높이를 JS로 재지 않아도 전환이 걸린다.
+ */
 function Footer() {
+  const [open, setOpen] = useState(false);
   return (
     <footer className="flex flex-col gap-3.5 px-5 pb-10 pt-12">
-      <div className="flex items-center gap-1">
+      <button
+        type="button"
+        aria-expanded={open}
+        onClick={() => setOpen((v) => !v)}
+        className="flex w-fit items-center gap-1"
+      >
         <span className="text-[13px] font-bold text-desk-ink">공유데스크</span>
-        <ChevronDown className="h-4.5 w-4.5 text-desk-ink" />
-      </div>
-      <div className="flex flex-col gap-5">
-        <div className="flex flex-col gap-0.5 text-[11px] text-desk-soft">
-          <span>대표 : 이용현</span>
-          <span>주소 : 서울 강남구 봉은사로37길 5, 4층</span>
-          <span className="flex gap-1">
-            사업자 등록번호 : 584-88-02580
-            <span className="text-desk-ink underline">사업자정보확인</span>
-          </span>
-          <span>통신판매업 신고번호 : 준비중</span>
-          <span>고객센터 : 1522-2038 · support@sharedesk.co.kr</span>
+        <ChevronDown className={`h-4.5 w-4.5 text-desk-ink transition-transform ${open ? 'rotate-180' : ''}`} />
+      </button>
+      <div
+        className={`grid transition-[grid-template-rows] duration-300 ease-out ${open ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'}`}
+      >
+        <div className="overflow-hidden">
+          {/* pb-1.5는 접히면 같이 사라지는 여백 — 펼침일 때만 링크 줄과 20px(footer gap 14 + 6)이 된다 */}
+          <div className="flex flex-col gap-0.5 pb-1.5 text-[11px] text-desk-soft">
+            <span>대표 : 이용현</span>
+            <span>주소 : 서울 강남구 봉은사로37길 5, 4층</span>
+            <span className="flex gap-1">
+              사업자 등록번호 : 584-88-02580
+              <span className="text-desk-ink underline">사업자정보확인</span>
+            </span>
+            <span>통신판매업 신고번호 : 준비중</span>
+            <span>고객센터 : 1522-2038 · support@sharedesk.co.kr</span>
+          </div>
         </div>
-        <nav className="flex items-center gap-2 text-[11px] text-desk-soft">
-          <span>회사소개</span>
-          <span className="h-2.5 w-px bg-desk-line" />
-          <span>이용약관</span>
-          <span className="h-2.5 w-px bg-desk-line" />
-          <span className="font-bold text-desk-ink">개인정보 처리방침</span>
-          <span className="h-2.5 w-px bg-desk-line" />
-          <span>고객지원</span>
-        </nav>
       </div>
+      <nav className="flex items-center gap-2 text-[11px] text-desk-soft">
+        <span>회사소개</span>
+        <span className="h-2.5 w-px bg-desk-line" />
+        <span>이용약관</span>
+        <span className="h-2.5 w-px bg-desk-line" />
+        <span className="font-bold text-desk-ink underline">개인정보 처리방침</span>
+        <span className="h-2.5 w-px bg-desk-line" />
+        <span>고객지원</span>
+      </nav>
     </footer>
   );
 }
@@ -727,15 +834,15 @@ export default function DeskHomePage() {
         <Header />
         <div className="flex flex-col gap-10 pt-2">
           <MainBanner />
-          <SearchSection />
           <DeskCarousel title="지금 인기 데스크" items={POPULAR_DESKS} />
           <DeskCarousel title="회원님을 위한 맞춤 추천" items={RECOMMENDED_DESKS} />
           {/* 공데AI 버튼은 위 맞춤추천 카루셀에 붙여 24px 간격(원본 시안) — gap-10(40px)에서 16px 상쇄 */}
           <div className="-mt-4">
             <AiCta />
           </div>
-          <WhereSection />
+          <NewDesksSection />
           <PromoBanner />
+          <WhereSection />
           <ArticleSlides />
         </div>
         <Footer />
