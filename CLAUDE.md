@@ -201,7 +201,9 @@ interface Budget {
   데이터 조회가 순서대로 쌓여 빈 화면이 길어진다.
 - **서버가 그리는 화면에 '지금 시각'을 넣지 않는다**: 서버가 그린 시각과 브라우저가 붙는 시각은
   반드시 어긋나 하이드레이션 오류가 난다. 초 단위 값은 마운트 후에 채운다(`TodaySpendingCard` 참고).
-  날짜 단위 값은 `TZ=Asia/Seoul` 전제 하에 일치한다.
+- **'오늘'은 반드시 `utils/dateRange`의 `todayISO`/`currentMonth`로 구한다.** `new Date()`로
+  직접 날짜를 만들면 실행 환경 시간대를 타서, UTC로 도는 배포 서버와 한국 브라우저가
+  서로 다른 날짜를 그린다. 두 함수는 항상 한국 시간으로 계산한다.
 
 ## Figma 시안 (`/desk`)
 
@@ -237,10 +239,9 @@ interface Budget {
 ## Environment
 - 비밀값은 `.env.local`에만 둔다. `.env`도 커밋 금지(`.env.example`만 커밋).
 - 필요한 키: `DATABASE_URL`(풀링) / `DATABASE_URL_UNPOOLED`(논풀링) / `AUTH_SECRET` /
-  `AUTH_GOOGLE_ID` / `AUTH_GOOGLE_SECRET` / `TZ`
-- **`TZ=Asia/Seoul`은 배포 환경에 반드시 넣는다.** 로그인 사용자의 화면은 서버에서 그려지고
-  '오늘의 소비'·캘린더가 서버가 아는 '오늘'을 쓴다. Vercel 기본값은 UTC라 이 값이 없으면
-  한국 시간 오전 9시 이전에 하루 어긋난 화면이 나온다. **로컬 PC는 이미 KST라 재현되지 않는다.**
+  `AUTH_GOOGLE_ID` / `AUTH_GOOGLE_SECRET`
+- **시간대 환경변수는 두지 않는다.** '오늘'의 기준은 `utils/dateRange.ts`에 한국 시간으로
+  못박혀 있어 서버가 어느 시간대로 돌든 결과가 같다. (Vercel은 `TZ`를 예약어로 막아둔다.)
 
 ## Docs
 의미 있는 변경/결정은 아래에 누적 기록한다.

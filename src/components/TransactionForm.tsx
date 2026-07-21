@@ -1,12 +1,12 @@
 'use client';
 
 import { useState, type FormEvent } from 'react';
-import { format } from 'date-fns';
 import { INSTALLMENT_MONTHS } from '../constants/installments';
 import { DEFAULT_PAYMENT_METHOD, PAYMENT_METHODS } from '../constants/paymentMethods';
 import { useCategories } from '../hooks/useCategories';
 import { useRecurring } from '../hooks/useRecurring';
 import { formatWon } from '../utils/format';
+import { todayISO } from '../utils/dateRange';
 import type { PaymentMethod, Transaction, TxType } from '../types';
 
 interface Props {
@@ -16,7 +16,8 @@ interface Props {
   onCancel?: () => void;
 }
 
-const today = () => format(new Date(), 'yyyy-MM-dd');
+// 날짜 기본값도 앱 전체와 같은 기준(한국 시간)을 쓴다 — utils/dateRange 참고.
+const today = todayISO;
 
 export default function TransactionForm({ initial, onSubmit, onCancel }: Props) {
   const { byType } = useCategories();

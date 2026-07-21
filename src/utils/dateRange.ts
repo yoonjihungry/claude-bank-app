@@ -7,14 +7,34 @@ import {
   parseISO,
 } from 'date-fns';
 
-/** 현재 월을 'YYYY-MM'으로 반환한다. */
-export function currentMonth(): string {
-  return format(new Date(), 'yyyy-MM');
+/**
+ * 이 앱의 '오늘'은 항상 한국 시간 기준이다.
+ *
+ * 실행 환경의 시간대를 따르면 안 되는 이유: 로그인 사용자의 화면은 서버에서 그려지는데
+ * 배포 서버는 UTC로 돈다. 그대로 두면 한국 시간 오전 9시 이전에 서버는 어제, 브라우저는
+ * 오늘로 판단해 화면이 어긋난다(hydration mismatch). 서버 시간대를 바꾸는 방법도 있지만
+ * Vercel은 `TZ`를 예약어로 막아두었고, 무엇보다 배포 환경 설정에 기대는 것보다
+ * 코드가 스스로 보장하는 편이 안전하다.
+ *
+ * 'en-CA' 로케일은 날짜를 'YYYY-MM-DD'로 포맷한다 — 별도 라이브러리 없이 원하는 모양이 나온다.
+ */
+const TIME_ZONE = 'Asia/Seoul';
+
+const isoFormatter = new Intl.DateTimeFormat('en-CA', {
+  timeZone: TIME_ZONE,
+  year: 'numeric',
+  month: '2-digit',
+  day: '2-digit',
+});
+
+/** 오늘 날짜를 ISO 'YYYY-MM-DD'로 반환한다(한국 시간 기준). */
+export function todayISO(): string {
+  return isoFormatter.format(new Date());
 }
 
-/** 오늘 날짜를 ISO 'YYYY-MM-DD'로 반환한다. */
-export function todayISO(): string {
-  return format(new Date(), 'yyyy-MM-dd');
+/** 현재 월을 'YYYY-MM'으로 반환한다(한국 시간 기준). */
+export function currentMonth(): string {
+  return todayISO().slice(0, 7);
 }
 
 /** ISO 'YYYY-MM-DD'에 delta일을 더한(뺀) 날짜를 반환한다. */
