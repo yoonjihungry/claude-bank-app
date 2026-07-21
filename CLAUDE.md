@@ -12,10 +12,13 @@
 - DB: PostgreSQL(Neon) + Prisma 7 (`prisma-client` 제너레이터 + PrismaPg 드라이버 어댑터)
 
 ### 데이터 저장의 현재 상태 (중요)
-**가계부 데이터(거래·예산·카테고리·반복규칙)는 아직 localStorage에 저장된다.** Prisma/Postgres는 현재
-인증 테이블(User/Account/Session/VerificationToken)만 실제로 쓰고 있다. `prisma/schema.prisma`에
-Transaction/Category/Budget 모델이 이미 정의돼 있지만 앱은 아직 그쪽을 읽지 않는다 —
-localStorage → 서버 API 교체는 마이그레이션 Phase 8 과제로 남아 있다(`docs/migration-plan.md` 참조).
+**저장 위치는 로그인 여부로 갈린다.** 비로그인 사용자는 localStorage, 로그인 사용자는
+`/api/*` → Postgres를 쓴다. `storage/repository.ts`가 두 구현을 같은 인터페이스 뒤에 두고,
+`LedgerContext`가 세션 상태를 보고 둘 중 하나를 고른다.
+
+남은 과제는 **최초 로그인 시 로컬 데이터를 서버로 옮기는 경로(Phase 8-5)** 다. 지금은 로그인하면
+서버 데이터(처음이면 기본 카테고리만 시드된 빈 상태)가 보이고, 로컬에 있던 기록은 로그아웃하면
+그대로 다시 보인다 — 지워지지는 않는다(`docs/migration-plan.md` 참조).
 
 로그인 게이팅은 **정책 B(로그인 선택)** 다. 비로그인 사용자는 localStorage로 그대로 쓰고,
 로그인 강제 미들웨어가 없어 auth 설정도 Node 런타임 단일 설정으로 둔다.
@@ -46,7 +49,12 @@ claude-bank-app/
    │   ├─ transactions/page.tsx# '/transactions' → screens/TransactionsPage
    │   ├─ budget/page.tsx      # '/budget'       → screens/BudgetPage
    │   ├─ desk/page.tsx        # '/desk'         → screens/DeskHomePage (독립 전체화면 데모)
-   │   └─ api/auth/[...nextauth]/route.ts
+   │   ├─ api/auth/[...nextauth]/route.ts
+   │   └─ api/                 # 가계부 데이터 CRUD(로그인 사용자 전용, 전부 세션 검사)
+   │       ├─ transactions/    # GET·POST + [id] PATCH·DELETE
+   │       ├─ categories/      # GET·POST + [id] PATCH·DELETE + seed(기본 카테고리 시드)
+   │       ├─ budgets/         # GET + PUT(upsert, limit<=0이면 삭제)
+   │       └─ recurring/       # GET·POST + [id] PATCH·DELETE + run(밀린 달 생성)
    ├─ screens/                 # 화면 본체(예전 pages/). app/의 page.tsx가 이걸 렌더한다
    │   ├─ DashboardPage.tsx    # 오늘의 소비 + 캘린더 + 이번달 소비금액 (3섹션)
    │   ├─ TransactionsPage.tsx # 카테고리/추이 차트 + 거래 입력·목록·필터
@@ -64,7 +72,7 @@ claude-bank-app/
    │   ├─ paymentMethods.ts    # 결제수단 옵션·뱃지·기본값
    │   └─ installments.ts      # 할부 개월 옵션 + 회차 금액 계산
    ├─ storage/
-   │   └─ repository.ts        # localStorage 읽기/쓰기 추상화 (추후 API로 교체 지점)
+   │   └─ repository.ts        # 저장소 추상화 — localStorage 구현 + 서버 API 구현(비동기)
    ├─ context/
    │   └─ LedgerContext.tsx    # 전역 상태(거래·예산·카테고리·반복규칙) + reducer, CRUD 액션
    ├─ hooks/
@@ -78,9 +86,12 @@ claude-bank-app/
    │   ├─ format.ts            # 통화(원)·날짜 포맷팅
    │   ├─ dateRange.ts         # 월 시작/끝, 기간 필터 헬퍼
    │   ├─ color.ts             # HSV↔RGB↔HEX 변환(커스텀 색상 선택기용)
-   │   └─ tokenColor.ts        # 디자인 토큰 → 실제 색 해석(차트 등 JS에서 색이 필요할 때)
+   │   ├─ tokenColor.ts        # 디자인 토큰 → 실제 색 해석(차트 등 JS에서 색이 필요할 때)
+   │   └─ recurring.ts         # 밀린 고정거래 생성(순수 함수) — 로컬/서버 공통 규칙
    ├─ components/
    │   ├─ AuthProvider.tsx         # SessionProvider 클라이언트 경계
+   │   ├─ LedgerGate.tsx           # 데이터 로딩/실패 화면(로드 끝난 뒤에만 children 렌더)
+   │   ├─ ErrorToast.tsx           # 저장 실패 알림 토스트
    │   ├─ HeaderAuth.tsx           # 헤더 로그인/아바타/로그아웃
    │   ├─ LoginSheet.tsx           # 로그인 안내 바텀시트
    │   ├─ TransactionForm.tsx      # 수입/지출 입력·수정 폼(결제수단·할부·매달 반복 포함)
@@ -155,13 +166,17 @@ interface Budget {
 
 ## Architecture Rules
 - **상태 관리**: 전역 상태는 `LedgerContext` + `useReducer`만 사용한다. 액션 이름:
-  `ADD_TX / UPDATE_TX / DELETE_TX / SET_BUDGET / ADD_CATEGORY / UPDATE_CATEGORY / DELETE_CATEGORY /
-  ADD_RULE / UPDATE_RULE / DELETE_RULE / RUN_RECURRING`.
-  상태가 바뀌면 `repository`를 통해 localStorage에 자동 저장한다(useEffect 구독).
-- **저장소 계층**: localStorage 접근은 반드시 `storage/repository.ts`를 통해서만 한다
-  (`getTransactions/saveTransactions/getBudgets/saveBudgets/getCategories/saveCategories/getRecurringRules/saveRecurringRules`).
-  컴포넌트나 훅에서 `localStorage`를 직접 호출하지 않는다 — Phase 8에서 fetch 기반 API로 교체할 때
-  이 계층만 바꾸면 되도록 유지한다.
+  `LOAD / ADD_TX / UPDATE_TX / DELETE_TX / SET_BUDGET / ADD_CATEGORY / UPDATE_CATEGORY /
+  DELETE_CATEGORY / ADD_RULE / UPDATE_RULE / DELETE_RULE / SYNC_RECURRING`.
+- **저장 방식**: 액션마다 저장한다(예전처럼 상태 전체를 useEffect로 저장하지 않는다).
+  화면에 먼저 반영하고(낙관적 업데이트) 뒤에서 저장하며, 저장이 실패하면 역방향 액션 대신
+  `loadAll()`로 통째로 다시 불러와 덮어쓰고 토스트로 알린다. Context는 `status`
+  (`loading/ready/error`)를 노출하고 `AppShell`의 `LedgerGate`가 로딩·실패 화면을 담당한다.
+- **저장소 계층**: 데이터 저장·조회는 반드시 `storage/repository.ts`를 통해서만 한다.
+  `getRepository('local' | 'server')`가 localStorage 구현과 fetch 구현 중 하나를 돌려주며,
+  모든 메서드는 비동기다. 컴포넌트나 훅에서 `localStorage`나 `fetch('/api/...')`를 직접 부르지 않는다.
+- **반복거래 계산**: `utils/recurring.ts`의 순수 함수가 원본이다. 로컬 구현은 이 함수를 직접 쓰고,
+  서버는 `/api/recurring/run`이 같은 규칙을 수행한다 — 한쪽만 고치지 않는다.
 - **카테고리 접근**: 카테고리는 편집 가능한 영속 상태다. 컴포넌트/훅은 `constants`의 정적 목록이 아니라
   `hooks/useCategories`(`all/byType/byId/nextColor` + CRUD)를 통해 접근한다. `DEFAULT_CATEGORIES`는
   최초 시드 용도로만 쓴다.

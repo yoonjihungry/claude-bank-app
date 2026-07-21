@@ -2,6 +2,30 @@
 
 의미 있는 변경 사항을 "날짜 — 무엇을 바꿨는지" 형식으로 최신순으로 기록한다.
 
+## 2026-07-21 — 로그인하면 서버에 저장된다 (Phase 8-3, 8-4)
+
+지금까지 만들어둔 API 라우트를 실제로 앱에 연결했다. **로그인 사용자의 가계부 데이터가
+Postgres에 저장되고 다른 기기에서도 보인다.**
+
+- `storage/repository.ts`를 갈아엎었다. 동기 함수 8개(`getX`/`saveX`)를 걷어내고
+  `LedgerRepository` 인터페이스 + 구현 두 개(localStorage / 서버 API)로 바꿨다.
+  `getRepository('local' | 'server')`로 고르며 모든 메서드가 비동기다.
+- `LedgerContext`가 `useSession()`으로 로그인 여부를 보고 저장 위치를 정한다.
+  로그인/로그아웃으로 위치가 바뀌면 자동으로 다시 불러온다.
+- 저장 방식이 "상태 전체를 useEffect로 통째 저장"에서 **액션별 저장**으로 바뀌었다.
+  화면에 먼저 반영하고 뒤에서 저장하며, 실패하면 `loadAll()`로 되돌리고 토스트를 띄운다.
+- `RUN_RECURRING` 액션이 사라지고 `LOAD`·`SYNC_RECURRING`이 생겼다. 반복거래 생성 계산은
+  `utils/recurring.ts` 순수 함수로 빼서 로컬 구현과 `/api/recurring/run`이 같은 규칙을 쓴다.
+- 새 파일: `components/LedgerGate.tsx`(로딩·실패 화면), `components/ErrorToast.tsx`(저장 실패 알림),
+  `app/api/categories/seed/route.ts`(기본 카테고리 시드).
+
+**기본 카테고리 시드를 서버가 하는 이유**: `DEFAULT_CATEGORIES`의 id는 `'food'`처럼 고정
+문자열인데 `Category.id`는 전역 PK다. 클라이언트가 그대로 POST하면 두 번째 사용자부터 충돌한다.
+서버에서 cuid를 새로 발급해 계정마다 다른 id를 갖게 했다.
+
+**아직 안 되는 것**: 로그인 전 로컬에 쌓아둔 기록은 서버로 넘어가지 않는다(Phase 8-5).
+로그아웃하면 로컬 데이터가 그대로 다시 보인다 — 지워지지는 않는다.
+
 ## 2026-07-20 — 프로덕션 Google 로그인 복구 (Vercel 환경변수 누락)
 
 **코드 변경 없음. 원인은 전부 Vercel/Google 콘솔 설정이었다.** 다만 화면만으로는 진단이 불가능했던

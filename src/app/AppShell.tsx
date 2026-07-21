@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 import { useEffect, useState, type ReactNode } from 'react';
 import { LedgerProvider } from '@/context/LedgerContext';
 import HeaderAuth from '@/components/HeaderAuth';
+import LedgerGate from '@/components/LedgerGate';
 
 /** 콘텐츠 폭 규칙(docs/design-system.md): 모바일 480px, PC(≥768px) 600px, 중앙 정렬 */
 const CONTENT = 'mx-auto w-full max-w-[480px] md:max-w-[600px]';
@@ -52,7 +53,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
           className={`${CONTENT} flex flex-col px-4 pt-5 pb-20`}
           style={{ paddingBottom: 'calc(5rem + env(safe-area-inset-bottom))' }}
         >
-          {mounted ? children : null}
+          {mounted ? <LedgerGate>{children}</LedgerGate> : null}
         </main>
 
         {/* 하단 고정 탭바 — 화면 하단 밀착(full-width 사각 + 상단 보더). 버튼 행은 콘텐츠 폭 유지 */}
