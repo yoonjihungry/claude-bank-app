@@ -5,15 +5,11 @@ import { usePathname } from 'next/navigation';
 import { useEffect, useState, type ReactNode } from 'react';
 import { LedgerProvider } from '@/context/LedgerContext';
 import HeaderAuth from '@/components/HeaderAuth';
+import LedgerGate from '@/components/LedgerGate';
+import type { LedgerData } from '@/storage/repository';
 
 /** 콘텐츠 폭 규칙(docs/design-system.md): 모바일 480px, PC(≥768px) 600px, 중앙 정렬 */
 const CONTENT = 'mx-auto w-full max-w-[480px] md:max-w-[600px]';
-
-/**
- * 공통 셸(헤더·탭바)을 씌우지 않는 독립 화면 라우트.
- * 자체 헤더/내비/푸터를 가진 완결형 시안(예: /desk)은 여기에 등록한다.
- */
-const BARE_ROUTES = ['/desk'];
 
 const TABS: { href: string; label: string }[] = [
   { href: '/', label: '홈' },
@@ -22,22 +18,28 @@ const TABS: { href: string; label: string }[] = [
 ];
 
 /**
- * 앱 셸(헤더 + 하단 탭바 + 전역 Context). App Router의 layout에서 children을 감싼다.
- * 페이지 콘텐츠는 localStorage 기반이라 서버/클라 첫 렌더가 달라 하이드레이션 불일치가
- * 생길 수 있으므로, 마운트 이후에만 children을 렌더해 서버 HTML과 일치시킨다.
+ * 앱 셸(헤더 + 하단 탭바 + 전역 Context). `(shell)` 그룹의 layout이 children을 감쌀 때 쓴다.
+ * 공통 셸이 필요 없는 독립 화면(`/desk`)은 애초에 그 그룹 밖에 있어 여기를 거치지 않는다.
+ *
+ * 렌더 시점이 두 갈래다.
+ * - 로그인(initialData 있음): 서버가 데이터를 실어 보냈으니 곧바로 그린다. 서버 HTML과
+ *   클라이언트 첫 렌더가 같은 값을 쓰므로 불일치가 없고, 화면이 처음부터 채워져 나온다.
+ * - 비로그인(initialData null): 데이터가 localStorage에만 있어 서버는 알 수 없다.
+ *   마운트 전후 결과가 달라지므로 마운트 이후에만 children을 그려 불일치를 피한다.
  */
-export default function AppShell({ children }: { children: ReactNode }) {
+export default function AppShell({
+  initialData,
+  children,
+}: {
+  initialData: LedgerData | null;
+  children: ReactNode;
+}) {
   const pathname = usePathname();
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
 
-  // 독립 화면 라우트는 공통 셸/전역 Context 없이 페이지만 그대로 렌더한다.
-  if (BARE_ROUTES.some((r) => pathname === r || pathname.startsWith(`${r}/`))) {
-    return <>{children}</>;
-  }
-
   return (
-    <LedgerProvider>
+    <LedgerProvider initialData={initialData}>
       <div className="min-h-screen bg-background text-foreground">
         {/* 헤더 — 좌측 로고 + 우측 로그인/계정 영역(HeaderAuth) */}
         <header className="border-b border-border bg-card">
@@ -52,7 +54,9 @@ export default function AppShell({ children }: { children: ReactNode }) {
           className={`${CONTENT} flex flex-col px-4 pt-5 pb-20`}
           style={{ paddingBottom: 'calc(5rem + env(safe-area-inset-bottom))' }}
         >
-          {mounted ? children : null}
+          {initialData !== null || mounted ? (
+            <LedgerGate>{children}</LedgerGate>
+          ) : null}
         </main>
 
         {/* 하단 고정 탭바 — 화면 하단 밀착(full-width 사각 + 상단 보더). 버튼 행은 콘텐츠 폭 유지 */}
