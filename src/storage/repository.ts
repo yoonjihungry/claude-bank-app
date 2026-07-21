@@ -1,6 +1,7 @@
 import { DEFAULT_CATEGORIES } from '@/constants/categories';
 import type { Budget, Category, RecurringRule, Transaction } from '@/types';
 import { runRecurring } from '@/utils/recurring';
+import { api, json } from './http';
 
 /**
  * 가계부 데이터 저장소 계층.
@@ -188,31 +189,6 @@ const localRepository: LedgerRepository = {
 // 서버 API 구현 (로그인)
 // ─────────────────────────────────────────────
 
-/**
- * 실패하면 반드시 throw한다 — LedgerContext가 이 예외를 잡아 낙관적 반영을 되돌린다.
- * 조용히 삼키면 화면에는 저장된 것처럼 보이는데 서버에는 없는 상태가 된다.
- */
-async function api<T>(path: string, init?: RequestInit): Promise<T> {
-  const response = await fetch(path, {
-    ...init,
-    headers: init?.body ? { 'Content-Type': 'application/json' } : undefined,
-  });
-
-  if (!response.ok) {
-    const message = await response
-      .json()
-      .then((body: { error?: string }) => body.error)
-      .catch(() => null);
-    throw new Error(message ?? `요청에 실패했습니다 (${response.status})`);
-  }
-
-  // 204 No Content — 본문이 없다.
-  if (response.status === 204) return undefined as T;
-  return (await response.json()) as T;
-}
-
-const json = (body: unknown) => JSON.stringify(body);
-
 const serverRepository: LedgerRepository = {
   async loadAll() {
     const [transactions, budgets, categories, recurringRules] = await Promise.all([
@@ -222,14 +198,9 @@ const serverRepository: LedgerRepository = {
       api<RecurringRule[]>('/api/recurring'),
     ]);
 
-    // 카테고리가 없으면 쓸 수 있는 화면이 안 나오므로 기본 카테고리를 시드한다.
-    // 로컬 구현이 DEFAULT_CATEGORIES를 fallback으로 쓰는 것과 같은 역할이며,
-    // id 충돌을 피하려고 서버가 새로 발급한다(/api/categories/seed 주석 참고).
-    if (categories.length === 0) {
-      const seeded = await api<Category[]>('/api/categories/seed', { method: 'POST' });
-      return { transactions, budgets, categories: seeded, recurringRules };
-    }
-
+    // 카테고리가 비어 있어도 여기서 시드하지 않는다.
+    // 로컬 데이터를 옮길지 먼저 물어봐야 하기 때문 — 시드부터 하면 기본 카테고리와
+    // 옮겨온 카테고리가 겹친다. 판단은 LedgerContext가 하고 storage/migration.ts가 실행한다.
     return { transactions, budgets, categories, recurringRules };
   },
 

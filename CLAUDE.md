@@ -16,9 +16,10 @@
 `/api/*` → Postgres를 쓴다. `storage/repository.ts`가 두 구현을 같은 인터페이스 뒤에 두고,
 `LedgerContext`가 세션 상태를 보고 둘 중 하나를 고른다.
 
-남은 과제는 **최초 로그인 시 로컬 데이터를 서버로 옮기는 경로(Phase 8-5)** 다. 지금은 로그인하면
-서버 데이터(처음이면 기본 카테고리만 시드된 빈 상태)가 보이고, 로컬에 있던 기록은 로그아웃하면
-그대로 다시 보인다 — 지워지지는 않는다(`docs/migration-plan.md` 참조).
+**최초 로그인 시**(= 계정에 카테고리가 하나도 없을 때) 이 기기에 쓰던 기록이 있으면
+`MigrationSheet`로 옮길지 묻는다. 옮기면 `/api/migrate`가 카테고리·규칙 id를 새로 발급하며
+한 트랜잭션으로 넣는다. 옮기지 않으면 기본 카테고리만 시드한다.
+**어느 쪽이든 로컬 원본은 지우지 않는다** — 로그아웃하면 쓰던 화면이 그대로 돌아온다.
 
 로그인 게이팅은 **정책 B(로그인 선택)** 다. 비로그인 사용자는 localStorage로 그대로 쓰고,
 로그인 강제 미들웨어가 없어 auth 설정도 Node 런타임 단일 설정으로 둔다.
@@ -43,18 +44,21 @@ claude-bank-app/
 ├─ docs/                       # changelog · decisions · design-system · migration-plan · tasks
 └─ src/
    ├─ app/                     # App Router — 라우트 세그먼트만 둔다(얇은 래퍼)
-   │   ├─ layout.tsx           # 루트 레이아웃(글로벌 CSS import, AuthProvider, AppShell)
-   │   ├─ AppShell.tsx         # 공통 셸(헤더+하단 탭바+LedgerProvider) + BARE_ROUTES 예외
-   │   ├─ page.tsx             # '/'             → screens/DashboardPage
-   │   ├─ transactions/page.tsx# '/transactions' → screens/TransactionsPage
-   │   ├─ budget/page.tsx      # '/budget'       → screens/BudgetPage
-   │   ├─ desk/page.tsx        # '/desk'         → screens/DeskHomePage (독립 전체화면 데모)
+   │   ├─ layout.tsx           # 루트 레이아웃 — html/body + 글로벌 CSS만. 세션·DB 조회 없음
+   │   ├─ AppShell.tsx         # 공통 셸(헤더+하단 탭바+LedgerProvider)
+   │   ├─ (shell)/             # 가계부 화면 그룹(주소에는 안 나타남). 요청 시점 렌더(ƒ)
+   │   │   ├─ layout.tsx       # auth() + loadLedgerData → AuthProvider·AppShell에 주입
+   │   │   ├─ page.tsx         # '/'             → screens/DashboardPage
+   │   │   ├─ transactions/page.tsx # '/transactions' → screens/TransactionsPage
+   │   │   └─ budget/page.tsx  # '/budget'       → screens/BudgetPage
+   │   ├─ desk/page.tsx        # '/desk' → screens/DeskHomePage. 그룹 밖이라 정적(○)
    │   ├─ api/auth/[...nextauth]/route.ts
    │   └─ api/                 # 가계부 데이터 CRUD(로그인 사용자 전용, 전부 세션 검사)
    │       ├─ transactions/    # GET·POST + [id] PATCH·DELETE
    │       ├─ categories/      # GET·POST + [id] PATCH·DELETE + seed(기본 카테고리 시드)
    │       ├─ budgets/         # GET + PUT(upsert, limit<=0이면 삭제)
-   │       └─ recurring/       # GET·POST + [id] PATCH·DELETE + run(밀린 달 생성)
+   │       ├─ recurring/       # GET·POST + [id] PATCH·DELETE + run(밀린 달 생성)
+   │       └─ migrate/         # 로컬 데이터 → 계정 일괄 이전(빈 계정에만 허용)
    ├─ screens/                 # 화면 본체(예전 pages/). app/의 page.tsx가 이걸 렌더한다
    │   ├─ DashboardPage.tsx    # 오늘의 소비 + 캘린더 + 이번달 소비금액 (3섹션)
    │   ├─ TransactionsPage.tsx # 카테고리/추이 차트 + 거래 입력·목록·필터
@@ -72,7 +76,9 @@ claude-bank-app/
    │   ├─ paymentMethods.ts    # 결제수단 옵션·뱃지·기본값
    │   └─ installments.ts      # 할부 개월 옵션 + 회차 금액 계산
    ├─ storage/
-   │   └─ repository.ts        # 저장소 추상화 — localStorage 구현 + 서버 API 구현(비동기)
+   │   ├─ repository.ts        # 저장소 추상화 — localStorage 구현 + 서버 API 구현(비동기)
+   │   ├─ migration.ts         # 최초 로그인 시 로컬 → 계정 이전 판단·실행
+   │   └─ http.ts              # 서버 API 호출 helper(실패 시 throw)
    ├─ context/
    │   └─ LedgerContext.tsx    # 전역 상태(거래·예산·카테고리·반복규칙) + reducer, CRUD 액션
    ├─ hooks/
@@ -92,6 +98,7 @@ claude-bank-app/
    │   ├─ AuthProvider.tsx         # SessionProvider 클라이언트 경계
    │   ├─ LedgerGate.tsx           # 데이터 로딩/실패 화면(로드 끝난 뒤에만 children 렌더)
    │   ├─ ErrorToast.tsx           # 저장 실패 알림 토스트
+   │   ├─ MigrationSheet.tsx       # 로컬 기록을 계정으로 옮길지 묻는 바텀시트
    │   ├─ HeaderAuth.tsx           # 헤더 로그인/아바타/로그아웃
    │   ├─ LoginSheet.tsx           # 로그인 안내 바텀시트
    │   ├─ TransactionForm.tsx      # 수입/지출 입력·수정 폼(결제수단·할부·매달 반복 포함)
@@ -185,8 +192,16 @@ interface Budget {
   `generatedMonths`에 기록한다. 같은 달을 두 번 만들지 않고, 사용자가 자동 생성분을 지워도 되살아나지 않는다.
 - **서버/클라이언트 경계**: `src/app/`은 기본 서버 컴포넌트다. 상태·이벤트·브라우저 API를 쓰는 컴포넌트에는
   `'use client'`를 명시한다(`AppShell`, `LedgerContext`, 대부분의 `components/`·`screens/`).
-- **독립 전체화면 라우트**: 자체 헤더/내비/푸터를 가진 완결형 화면은 `AppShell`의 `BARE_ROUTES`에 등록해
-  공통 셸(💰가계부 헤더+탭바)과 전역 Context 없이 렌더한다(현재 `/desk`).
+- **독립 전체화면 라우트**: 자체 헤더/내비/푸터를 가진 완결형 화면은 `(shell)` 그룹 **밖**에 둔다
+  (현재 `/desk`). 공통 셸·전역 Context는 물론 세션·DB 조회도 거치지 않아 정적으로 남는다.
+  ~~`AppShell`의 `BARE_ROUTES` 배열에 등록~~ — 런타임 분기로는 레이아웃이 이미 한 서버 작업을
+  되돌릴 수 없어서 라우트 그룹으로 바꿨다.
+- **서버에서 읽고 넘기기**: 로그인 사용자에게 필요한 데이터는 `(shell)/layout.tsx`가 서버에서 읽어
+  props로 내린다. 클라이언트에서 `useEffect` + `fetch`로 첫 데이터를 가져오지 않는다 — 로그인 확인과
+  데이터 조회가 순서대로 쌓여 빈 화면이 길어진다.
+- **서버가 그리는 화면에 '지금 시각'을 넣지 않는다**: 서버가 그린 시각과 브라우저가 붙는 시각은
+  반드시 어긋나 하이드레이션 오류가 난다. 초 단위 값은 마운트 후에 채운다(`TodaySpendingCard` 참고).
+  날짜 단위 값은 `TZ=Asia/Seoul` 전제 하에 일치한다.
 
 ## Figma 시안 (`/desk`)
 
@@ -222,7 +237,10 @@ interface Budget {
 ## Environment
 - 비밀값은 `.env.local`에만 둔다. `.env`도 커밋 금지(`.env.example`만 커밋).
 - 필요한 키: `DATABASE_URL`(풀링) / `DATABASE_URL_UNPOOLED`(논풀링) / `AUTH_SECRET` /
-  `AUTH_GOOGLE_ID` / `AUTH_GOOGLE_SECRET`
+  `AUTH_GOOGLE_ID` / `AUTH_GOOGLE_SECRET` / `TZ`
+- **`TZ=Asia/Seoul`은 배포 환경에 반드시 넣는다.** 로그인 사용자의 화면은 서버에서 그려지고
+  '오늘의 소비'·캘린더가 서버가 아는 '오늘'을 쓴다. Vercel 기본값은 UTC라 이 값이 없으면
+  한국 시간 오전 9시 이전에 하루 어긋난 화면이 나온다. **로컬 PC는 이미 KST라 재현되지 않는다.**
 
 ## Docs
 의미 있는 변경/결정은 아래에 누적 기록한다.

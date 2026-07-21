@@ -116,18 +116,27 @@ app/
 
 ## Phase 8. 저장소 교체 (localStorage → API)
 
-- [ ] `app/api/transactions/route.ts` 등 CRUD 엔드포인트 작성
+**2026-07-21 완료.** 상세는 `changelog.md`의 2026-07-21 두 항목 참조.
+
+- [x] 스키마 보강 — `RecurringRule` 모델이 아예 없어서 추가하고, `Transaction.recurringId`와
+  `categoryId` nullable(`onDelete: SetNull`) 처리
+- [x] `app/api/transactions/route.ts` 등 CRUD 엔드포인트 작성
   - `GET/POST/PATCH/DELETE` 각각 구현
   - 세션에서 `userId` 꺼내서 본인 데이터만 접근하도록 제한
-- [ ] `storage/repository.ts`를 API 호출 기반으로 교체
-  - 기존 인터페이스(`getTransactions/saveTransactions/...`)를 유지하면 `LedgerContext`는 거의 안 바뀜
-- [ ] 최초 로그인 시 로컬 데이터 → 서버 마이그레이션 로직 (선택)
-  - "기존 데이터를 계정에 옮기시겠습니까?" 프롬프트
+- [x] `storage/repository.ts`를 API 호출 기반으로 교체
+  - ~~기존 인터페이스를 유지하면 `LedgerContext`는 거의 안 바뀜~~ — **틀린 예상이었다.**
+    기존 인터페이스는 동기 + 배열 통째로 저장이라 유지가 불가능했고, `useReducer` lazy init과
+    "상태 바뀔 때마다 전체 저장" useEffect 4개에 물려 있어 `LedgerContext`는 사실상 재작성했다.
+  - 실제 결과: `LedgerRepository` 인터페이스 + 구현 둘(localStorage / 서버 API), 전부 비동기.
+    저장은 액션별로, 낙관적 반영 + 실패 시 `loadAll()` 재조회로 롤백.
+- [x] 최초 로그인 시 로컬 데이터 → 서버 마이그레이션 로직
+  - `POST /api/migrate` + `MigrationSheet` — 빈 계정일 때만, 확인받고 옮긴다. 원본은 남긴다.
 
 ## Phase 9. 마무리
 
-- [ ] 로딩/에러 상태 처리 (로그인 확인 중, API 호출 중 스피너 등)
-- [ ] 로그아웃 처리, 세션 만료 처리
+- [x] 로딩/에러 상태 처리 — `LedgerContext.status` + `LedgerGate`(로딩·재시도 화면),
+  저장 실패는 `ErrorToast`. 2026-07-21
+- [ ] 세션 만료 처리 (만료된 채로 저장하면 401 → 토스트만 뜨고 재로그인 유도가 없다)
 - [x] `CLAUDE.md` 업데이트 (Tech Stack, Directory Structure, Architecture Rules) — 2026-07-15
 - [x] ~~`design-system.md`의 파일 경로 참조 갱신 (`src/styles/` → 새 위치)~~ — 불필요. `src/styles/`가
   그대로 유지돼 문서의 경로 참조가 전부 유효하다.

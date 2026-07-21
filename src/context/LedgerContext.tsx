@@ -7,6 +7,7 @@ import {
   useEffect,
   useMemo,
   useReducer,
+  useRef,
   useState,
   type ReactNode,
 } from 'react';
@@ -19,7 +20,14 @@ import {
   type LedgerRepository,
   type StorageMode,
 } from '../storage/repository';
+import {
+  migrateToServer,
+  readPendingMigration,
+  seedServerCategories,
+  type PendingMigration,
+} from '../storage/migration';
 import ErrorToast from '../components/ErrorToast';
+import MigrationSheet from '../components/MigrationSheet';
 import { currentMonth } from '../utils/dateRange';
 
 type LedgerAction =
@@ -169,11 +177,24 @@ interface LedgerContextValue extends LedgerData {
 
 const LedgerContext = createContext<LedgerContextValue | null>(null);
 
-export function LedgerProvider({ children }: { children: ReactNode }) {
+export function LedgerProvider({
+  initialData,
+  children,
+}: {
+  /** 서버(레이아웃)가 실어 보낸 데이터. 로그인 사용자에게만 있고, 없으면 클라이언트가 직접 읽는다. */
+  initialData: LedgerData | null;
+  children: ReactNode;
+}) {
   const { status: sessionStatus } = useSession();
-  const [state, dispatch] = useReducer(reducer, EMPTY);
-  const [status, setStatus] = useState<LedgerStatus>('loading');
+  // 서버 데이터로 시작하면 첫 렌더부터 화면이 채워진다 — 로딩 문구를 볼 일이 없다.
+  const [state, dispatch] = useReducer(reducer, initialData ?? EMPTY);
+  const [status, setStatus] = useState<LedgerStatus>(
+    initialData ? 'ready' : 'loading',
+  );
   const [error, setError] = useState<string | null>(null);
+  // 처음 로그인했는데 이 기기에 옮길 데이터가 있을 때만 채워진다(= 이전 안내 표시).
+  const [pending, setPending] = useState<PendingMigration | null>(null);
+  const [migrating, setMigrating] = useState(false);
 
   // 로그인 상태가 곧 저장 위치다. 세션 확인 중에는 아직 알 수 없으므로 로딩으로 둔다.
   const storageMode: StorageMode =
@@ -183,32 +204,107 @@ export function LedgerProvider({ children }: { children: ReactNode }) {
     [storageMode],
   );
 
-  const load = useCallback(async () => {
-    setStatus('loading');
-    try {
-      const data = await repository.loadAll();
-      dispatch({ type: 'LOAD', payload: data });
-      setStatus('ready');
-
-      // 밀린 반복 거래를 이번 달까지 생성한다. generatedMonths로 멱등하므로 매 로드마다 돌려도 된다.
-      // 실패해도 이미 불러온 데이터는 쓸 수 있으니 상태를 error로 내리지 않는다.
+  /**
+   * 밀린 반복 거래를 이번 달까지 생성한다. generatedMonths로 멱등하므로 매 로드마다 돌려도 된다.
+   * 실패해도 이미 불러온 데이터는 쓸 수 있으니 상태를 error로 내리지 않는다.
+   */
+  const syncRecurring = useCallback(
+    async (rules: RecurringRule[]) => {
+      // 규칙이 없으면 만들 것도 없다. 고정거래를 안 쓰는 사용자의 왕복 한 번을 아낀다.
+      if (rules.length === 0) return;
       try {
         const synced = await repository.runRecurring(currentMonth());
         if (synced) dispatch({ type: 'SYNC_RECURRING', payload: synced });
       } catch {
         setError('고정거래 자동 생성에 실패했습니다');
       }
+    },
+    [repository],
+  );
+
+  /**
+   * 데이터를 확보한 뒤의 마무리. 직접 불러왔든 서버가 실어 보냈든 똑같이 거쳐야 한다.
+   *
+   * 카테고리가 하나도 없는 계정 = 이 계정으로 처음 들어온 것.
+   * 이 기기에 쓰던 기록이 있으면 옮길지 먼저 묻고, 없으면 기본 카테고리를 넣어준다.
+   * 물어보는 동안에는 시드도 반복거래 생성도 하지 않는다 — 옮기기와 섞이면 중복이 된다.
+   */
+  const settle = useCallback(
+    async (data: LedgerData) => {
+      if (storageMode === 'server' && data.categories.length === 0) {
+        const found = await readPendingMigration();
+        if (found) {
+          setPending(found);
+          return;
+        }
+        const categories = await seedServerCategories();
+        dispatch({ type: 'LOAD', payload: { ...data, categories } });
+      }
+      await syncRecurring(data.recurringRules);
+    },
+    [storageMode, syncRecurring],
+  );
+
+  const load = useCallback(async () => {
+    setStatus('loading');
+    try {
+      const data = await repository.loadAll();
+      dispatch({ type: 'LOAD', payload: data });
+      setStatus('ready');
+      await settle(data);
     } catch {
       dispatch({ type: 'LOAD', payload: EMPTY });
       setStatus('error');
     }
-  }, [repository]);
+  }, [repository, settle]);
+
+  // 서버가 데이터를 실어 보냈으면 첫 로드는 건너뛴다(이미 화면에 들어 있다).
+  const servedByServer = useRef(initialData !== null);
 
   // 세션 판정이 끝난 뒤에 불러온다. 로그인/로그아웃으로 저장 위치가 바뀌면 다시 불러온다.
   useEffect(() => {
     if (sessionStatus === 'loading') return;
+
+    if (servedByServer.current && initialData) {
+      servedByServer.current = false;
+      // 불러오기만 건너뛸 뿐, 이전 안내·고정거래 생성은 똑같이 거쳐야 한다.
+      void settle(initialData);
+      return;
+    }
+
     void load();
-  }, [sessionStatus, load]);
+  }, [sessionStatus, initialData, load, settle]);
+
+  /** 이 기기의 기록을 계정으로 옮긴다. 성공하면 서버가 돌려준 결과로 화면을 갈아끼운다. */
+  const acceptMigration = useCallback(async () => {
+    if (!pending) return;
+    setMigrating(true);
+    try {
+      // 카테고리·규칙 id를 서버가 새로 발급하므로 반환값을 그대로 써야 한다.
+      const migrated = await migrateToServer(pending.data);
+      dispatch({ type: 'LOAD', payload: migrated });
+      setPending(null);
+      await syncRecurring(migrated.recurringRules);
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : '옮기는 데 실패했습니다');
+    } finally {
+      setMigrating(false);
+    }
+  }, [pending, syncRecurring]);
+
+  /** 옮기지 않기로 함. 기본 카테고리만 넣고 빈 계정으로 시작한다(로컬 원본은 그대로 남는다). */
+  const skipMigration = useCallback(async () => {
+    setMigrating(true);
+    try {
+      await seedServerCategories();
+      setPending(null);
+      await load();
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : '기본 카테고리를 만들지 못했습니다');
+    } finally {
+      setMigrating(false);
+    }
+  }, [load]);
 
   /**
    * 낙관적 반영: 화면을 먼저 바꾸고 저장을 뒤에서 진행한다.
@@ -305,6 +401,14 @@ export function LedgerProvider({ children }: { children: ReactNode }) {
   return (
     <LedgerContext.Provider value={value}>
       {children}
+      {pending && (
+        <MigrationSheet
+          summary={pending.summary}
+          busy={migrating}
+          onMigrate={() => void acceptMigration()}
+          onSkip={() => void skipMigration()}
+        />
+      )}
       {error && <ErrorToast message={error} onDismiss={() => setError(null)} />}
     </LedgerContext.Provider>
   );
