@@ -57,7 +57,13 @@ export default function SelectedDayPanel({ date, onClose }: Props) {
         </div>
       )}
 
-      <TransactionList transactions={dayTx} onDelete={deleteTransaction} />
+      {/* 이 패널은 이미 헤더에 날짜가 있어 각 행의 날짜·색 점은 중복이라 뺀다(뉴스캐시 시안). */}
+      <TransactionList
+        transactions={dayTx}
+        onDelete={deleteTransaction}
+        hideColorDot
+        hideDate
+      />
     </section>
   );
 }

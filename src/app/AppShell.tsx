@@ -11,10 +11,39 @@ import type { LedgerData } from '@/storage/repository';
 /** 콘텐츠 폭 규칙(docs/design-system.md): 모바일 480px, PC(≥768px) 600px, 중앙 정렬 */
 const CONTENT = 'mx-auto w-full max-w-[480px] md:max-w-[600px]';
 
-const TABS: { href: string; label: string }[] = [
-  { href: '/', label: '홈' },
-  { href: '/transactions', label: '거래' },
-  { href: '/budget', label: '카테고리' },
+/** 하단 탭 라인 아이콘(NH앱 nav 참고 — 얇은 아웃라인). stroke는 currentColor로 활성색을 따른다. */
+function HomeIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M4 11.3 12 5l8 6.3v6.9a1.6 1.6 0 0 1-1.6 1.6H5.6A1.6 1.6 0 0 1 4 18.2z" />
+      <line x1="9.6" y1="15.3" x2="14.4" y2="15.3" />
+    </svg>
+  );
+}
+function ExchangeIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M17 7H8a3 3 0 0 0 0 6h8a3 3 0 0 1 0 6H7" />
+      <path d="M15 4.5 17.5 7 15 9.5" />
+      <path d="M9 14.5 6.5 17 9 19.5" />
+    </svg>
+  );
+}
+function GridIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <rect x="4.5" y="4.5" width="6.5" height="6.5" rx="1.8" />
+      <rect x="13" y="4.5" width="6.5" height="6.5" rx="1.8" />
+      <rect x="4.5" y="13" width="6.5" height="6.5" rx="1.8" />
+      <rect x="13" y="13" width="6.5" height="6.5" rx="1.8" />
+    </svg>
+  );
+}
+
+const TABS: { href: string; label: string; Icon: () => ReactNode }[] = [
+  { href: '/', label: '홈', Icon: HomeIcon },
+  { href: '/transactions', label: '거래', Icon: ExchangeIcon },
+  { href: '/budget', label: '카테고리', Icon: GridIcon },
 ];
 
 /**
@@ -44,7 +73,12 @@ export default function AppShell({
         {/* 헤더 — 좌측 로고 + 우측 로그인/계정 영역(HeaderAuth) */}
         <header className="border-b border-border bg-card">
           <div className={`${CONTENT} flex items-center justify-between px-4 py-4`}>
-            <h1 className="text-xl font-bold">💰 가계부</h1>
+            <div className="flex items-center gap-2">
+              <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary text-sm font-black text-primary-foreground">
+                ₩
+              </span>
+              <h1 className="text-xl font-bold">가계부</h1>
+            </div>
             <HeaderAuth />
           </div>
         </header>
@@ -65,7 +99,7 @@ export default function AppShell({
           style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
         >
           <div className={`${CONTENT} grid grid-cols-3`}>
-            {TABS.map(({ href, label }) => {
+            {TABS.map(({ href, label, Icon }) => {
               const active =
                 href === '/' ? pathname === '/' : pathname.startsWith(href);
               return (
@@ -73,10 +107,18 @@ export default function AppShell({
                   key={href}
                   href={href}
                   aria-current={active ? 'page' : undefined}
-                  className={`flex h-16 items-center justify-center text-sm font-medium transition ${
+                  className={`relative flex h-16 flex-col items-center justify-center gap-1 text-xs font-medium transition ${
                     active ? 'text-primary' : 'text-muted-foreground hover:text-foreground'
                   }`}
                 >
+                  {/* 활성 탭 상단 인디케이터(뉴스캐시 시안) */}
+                  {active && (
+                    <span
+                      aria-hidden="true"
+                      className="absolute top-0 h-0.5 w-8 rounded-full bg-primary"
+                    />
+                  )}
+                  <Icon />
                   {label}
                 </Link>
               );

@@ -10,9 +10,19 @@ interface Props {
   /** 없으면 수정 버튼을 숨긴다(조회 전용 목록). */
   onEdit?: (tx: Transaction) => void;
   onDelete: (id: string) => void;
+  /** 좌측 카테고리 색 점을 숨긴다(대시보드 선택일 패널처럼 간결하게). */
+  hideColorDot?: boolean;
+  /** 날짜를 숨긴다(단일 날짜 패널에서 중복이라 뺄 때). */
+  hideDate?: boolean;
 }
 
-export default function TransactionList({ transactions, onEdit, onDelete }: Props) {
+export default function TransactionList({
+  transactions,
+  onEdit,
+  onDelete,
+  hideColorDot,
+  hideDate,
+}: Props) {
   const { byId } = useCategories();
 
   if (transactions.length === 0) {
@@ -34,16 +44,20 @@ export default function TransactionList({ transactions, onEdit, onDelete }: Prop
             key={tx.id}
             className="flex items-center gap-3 rounded-lg border border-border bg-card p-3 shadow-sm"
           >
-            <span
-              className="h-2.5 w-2.5 shrink-0 rounded-full"
-              style={{ backgroundColor: category?.color ?? '#9ca3af' }}
-            />
+            {!hideColorDot && (
+              <span
+                className="h-2.5 w-2.5 shrink-0 rounded-full"
+                style={{ backgroundColor: category?.color ?? '#9ca3af' }}
+              />
+            )}
             <div className="min-w-0 flex-1">
               <p className="truncate font-medium text-foreground">
                 {category?.name ?? '알 수 없음'}
               </p>
               <div className="mt-0.5 flex flex-wrap items-center gap-1.5">
-                <span className="text-xs text-muted-foreground">{formatDate(tx.date)}</span>
+                {!hideDate && (
+                  <span className="text-xs text-muted-foreground">{formatDate(tx.date)}</span>
+                )}
                 {method && (
                   <span
                     className={`rounded-full px-1.5 py-0.5 text-[11px] font-semibold ${
