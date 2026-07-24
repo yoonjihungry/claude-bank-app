@@ -1,40 +1,11 @@
 'use client';
 
-import { Cell, Label, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts';
+import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts';
 import type { CategorySlice } from '../hooks/useStatistics';
 import { formatCurrency, formatWonCompact } from '../utils/format';
-import { tokenColor } from '../utils/tokenColor';
 
 interface Props {
   data: CategorySlice[];
-}
-
-/** 도넛 가운데(총 지출) 라벨. viewBox의 중심 좌표에 두 줄로 그린다. */
-function CenterLabel({
-  viewBox,
-  total,
-}: {
-  viewBox?: { cx?: number; cy?: number };
-  total: number;
-}) {
-  const cx = viewBox?.cx ?? 0;
-  const cy = viewBox?.cy ?? 0;
-  return (
-    <text x={cx} y={cy} textAnchor="middle">
-      <tspan x={cx} dy="-0.5em" fontSize="11" fill={tokenColor('muted-foreground')}>
-        총 지출
-      </tspan>
-      <tspan
-        x={cx}
-        dy="1.6em"
-        fontSize="16"
-        fontWeight="700"
-        fill={tokenColor('foreground')}
-      >
-        {formatWonCompact(total)}
-      </tspan>
-    </text>
-  );
 }
 
 export default function CategoryChart({ data }: Props) {
@@ -51,7 +22,7 @@ export default function CategoryChart({ data }: Props) {
   return (
     <div className="rounded-lg border border-border bg-card p-4 shadow-sm">
       <div className="flex items-center gap-4">
-        <div className="h-40 w-40 shrink-0">
+        <div className="relative h-40 w-40 shrink-0">
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
               <Pie
@@ -68,11 +39,18 @@ export default function CategoryChart({ data }: Props) {
                 {data.map((slice) => (
                   <Cell key={slice.categoryId} fill={slice.color} />
                 ))}
-                <Label content={<CenterLabel total={total} />} position="center" />
               </Pie>
               <Tooltip formatter={(value) => formatCurrency(Number(value))} />
             </PieChart>
           </ResponsiveContainer>
+
+          {/* 도넛 가운데 총 지출 — SVG viewBox 대신 HTML 오버레이로 확실히 중앙 정렬 */}
+          <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center gap-0.5">
+            <span className="text-[11px] text-muted-foreground">총 지출</span>
+            <span className="text-base font-bold text-foreground tabular-nums">
+              {formatWonCompact(total)}
+            </span>
+          </div>
         </div>
 
         <ul className="flex flex-1 flex-col gap-2">

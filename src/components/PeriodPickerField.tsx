@@ -174,8 +174,10 @@ export default function PeriodPickerField({
           aria-modal="true"
           aria-label="기간 선택"
           style={{ paddingBottom: 'calc(1.5rem + env(safe-area-inset-bottom))' }}
-          className={`absolute inset-x-0 bottom-0 mx-auto w-full max-w-[480px] rounded-t-[22px] border border-border bg-card px-5 pt-2.5 shadow-[0_-10px_40px_-12px_hsl(222_47%_20%/0.3)] transition-transform duration-300 ease-out md:max-w-[600px] ${
-            open ? 'translate-y-0' : 'translate-y-full'
+          className={`absolute inset-x-0 bottom-0 mx-auto w-full max-w-[480px] rounded-t-[22px] border border-border bg-card px-5 pt-2.5 transition-transform duration-300 ease-out md:max-w-[600px] ${
+            open
+              ? 'translate-y-0 shadow-[0_-10px_40px_-12px_hsl(222_47%_20%/0.3)]'
+              : 'translate-y-full'
           }`}
         >
           {/* 그립 핸들 */}
