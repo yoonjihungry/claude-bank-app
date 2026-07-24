@@ -39,7 +39,8 @@ export default function FilterBar({ filter, onChange }: Props) {
     filter.month != null ||
     filter.minAmount != null ||
     filter.maxAmount != null ||
-    (filter.keyword ?? '') !== '';
+    (filter.keyword ?? '') !== '' ||
+    filter.hideRecurring === true;
 
   return (
     <div className="flex flex-wrap items-center gap-2 rounded-lg border border-border bg-card p-3 shadow-sm">
@@ -107,6 +108,16 @@ export default function FilterBar({ filter, onChange }: Props) {
         className={`${controlClass} flex-1`}
         aria-label="메모 검색"
       />
+
+      <label className="flex items-center gap-1.5 whitespace-nowrap px-1 text-sm text-muted-foreground">
+        <input
+          type="checkbox"
+          checked={filter.hideRecurring ?? false}
+          onChange={(e) => patch({ hideRecurring: e.target.checked || undefined })}
+          className="h-4 w-4 accent-primary"
+        />
+        고정거래 숨기기
+      </label>
 
       {isActive && (
         <button

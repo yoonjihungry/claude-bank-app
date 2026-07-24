@@ -13,6 +13,8 @@ export interface TransactionFilter {
   maxAmount?: number;
   /** 메모 부분 일치 검색 */
   keyword?: string;
+  /** 고정거래(반복 규칙이 자동 생성한 거래)를 목록에서 숨긴다. */
+  hideRecurring?: boolean;
 }
 
 function matches(tx: Transaction, filter: TransactionFilter): boolean {
@@ -23,6 +25,7 @@ function matches(tx: Transaction, filter: TransactionFilter): boolean {
   if (filter.minAmount != null && tx.amount < filter.minAmount) return false;
   if (filter.maxAmount != null && tx.amount > filter.maxAmount) return false;
   if (filter.keyword && !(tx.memo ?? '').includes(filter.keyword)) return false;
+  if (filter.hideRecurring && tx.recurringId) return false;
   return true;
 }
 
@@ -34,13 +37,33 @@ export function useTransactions(filter: TransactionFilter = {}): Transaction[] {
   const { transactions } = useLedger();
   // 원시 값으로 분해해 의존성으로 사용한다.
   // 호출부가 인라인 객체(예: { month })를 넘겨도 매 렌더 재계산되지 않는다.
-  const { month, date, type, categoryId, minAmount, maxAmount, keyword } = filter;
+  const { month, date, type, categoryId, minAmount, maxAmount, keyword, hideRecurring } =
+    filter;
 
   return useMemo(() => {
     return transactions
       .filter((tx) =>
-        matches(tx, { month, date, type, categoryId, minAmount, maxAmount, keyword }),
+        matches(tx, {
+          month,
+          date,
+          type,
+          categoryId,
+          minAmount,
+          maxAmount,
+          keyword,
+          hideRecurring,
+        }),
       )
       .sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : 0));
-  }, [transactions, month, date, type, categoryId, minAmount, maxAmount, keyword]);
+  }, [
+    transactions,
+    month,
+    date,
+    type,
+    categoryId,
+    minAmount,
+    maxAmount,
+    keyword,
+    hideRecurring,
+  ]);
 }
