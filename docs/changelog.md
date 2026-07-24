@@ -2,6 +2,24 @@
 
 의미 있는 변경 사항을 "날짜 — 무엇을 바꿨는지" 형식으로 최신순으로 기록한다.
 
+## 2026-07-24 — 네이티브 달력 → 커스텀 날짜/기간 선택기
+
+브라우저 기본 달력(`<input type="date">`·`<input type="month">`의 팝업)은 CSS로 스타일을
+못 바꾸고 OS·브라우저마다 모양이 달라, 앱 디자인(토큰 색 + `TransactionCalendar` 스타일)의
+커스텀 바텀시트 선택기로 교체했다.
+
+- **거래 추가 날짜 선택기**(`DatePickerField` 신규 · `TransactionForm`): 날짜칸을 네이티브
+  `<input type="date">`에서 커스텀 컴포넌트로 바꿨다. 트리거를 누르면 바텀시트(`LoginSheet`와
+  같은 스크림·슬라이드·Esc·`useBodyScrollLock` 패턴)가 올라오고, 안에는 `MonthNavigator` +
+  대시보드와 같은 달력 그리드(주말색·선택=채운 primary·오늘=옅은 primary)를 그린다. 헤더에
+  '오늘' 바로가기, 하단 '취소·완료'. `draft`로 임시 선택 후 완료를 눌러야 확정.
+- **내역 필터 기간 선택기**(`PeriodPickerField` 신규 · `FilterBar`): 네이티브
+  `<input type="month">`을 **월별/일별 토글** 선택기로 바꿨다. 한 시트 안에서 세그먼트 토글로
+  전환 — 월별은 12개월 그리드로 `month`를, 일별은 날짜 달력으로 `date`(+그 달 `month`)를 고른다.
+  통계/차트가 `filter.month`를 보므로 일별에서도 그 달 기준이 유지된다. 헤더 바로가기 라벨은
+  월별 '이번 달' / 일별 '오늘'. `FilterBar`의 `isActive`·초기화도 `filter.date`까지 반영.
+- 두 선택기 모두 '오늘' 계산은 `utils/dateRange`(한국 시간) 기준, 색은 디자인 토큰만 사용.
+
 ## 2026-07-24 — 선택일 패널 시안 정합·아코디언 + 거래 목록 월 스코프
 
 - **선택일 패널 시안 정합**(`SelectedDayPanel`·`TransactionList`): 뉴스캐시 시안대로 행을

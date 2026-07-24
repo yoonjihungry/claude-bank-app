@@ -1,5 +1,6 @@
 'use client';
 
+import PeriodPickerField from './PeriodPickerField';
 import { useCategories } from '../hooks/useCategories';
 import type { TransactionFilter } from '../hooks/useTransactions';
 import type { TxType } from '../types';
@@ -37,6 +38,7 @@ export default function FilterBar({ filter, onChange }: Props) {
     filter.type != null ||
     filter.categoryId != null ||
     filter.month != null ||
+    filter.date != null ||
     filter.minAmount != null ||
     filter.maxAmount != null ||
     (filter.keyword ?? '') !== '' ||
@@ -44,12 +46,12 @@ export default function FilterBar({ filter, onChange }: Props) {
 
   return (
     <div className="flex flex-wrap items-center gap-2 rounded-lg border border-border bg-card p-3 shadow-sm">
-      <input
-        type="month"
-        value={filter.month ?? ''}
-        onChange={(e) => patch({ month: e.target.value || undefined })}
+      <PeriodPickerField
+        month={filter.month}
+        date={filter.date}
+        onChange={(next) => patch(next)}
         className={controlClass}
-        aria-label="월"
+        id="period-filter"
       />
 
       <select
