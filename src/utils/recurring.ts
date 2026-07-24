@@ -63,3 +63,19 @@ export function runRecurring(
     recurringRules: nextRules,
   };
 }
+
+/**
+ * 새 규칙을 만들 때, startMonth부터 이번 달 직전까지의 달 목록을 돌려준다.
+ * 이 달들을 규칙의 generatedMonths에 미리 넣어두면 runRecurring이 지난 달을
+ * 소급 생성하지 않고 이번 달부터만 만든다(고정거래는 앞으로만 쌓인다).
+ * startMonth가 이번 달 이후면 빈 배열 — 미래 시작 규칙은 그대로 그 달부터 생성된다.
+ */
+export function monthsBeforeCurrent(startMonth: string, currentMonth: string): string[] {
+  const months: string[] = [];
+  let month = startMonth;
+  for (let guard = 0; month < currentMonth && guard < MONTH_GUARD; guard += 1) {
+    months.push(month);
+    month = shiftMonth(month, 1);
+  }
+  return months;
+}

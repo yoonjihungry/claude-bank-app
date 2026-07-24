@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { CATEGORY_PALETTE } from '../constants/categories';
 import { useLedger } from '../context/LedgerContext';
+import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
 import { useCategories } from '../hooks/useCategories';
 import type { Category } from '../types';
 import { hexToHsv, hsvToHex, hsvToRgb, type Hsv } from '../utils/color';
@@ -51,6 +52,9 @@ export default function CategoryModal({
   const hueRef = useRef<HTMLDivElement>(null);
 
   const isEdit = mode === 'edit';
+
+  // 열려 있는 동안 뒤 배경 스크롤을 잠근다(화면 튐·끊김 방지).
+  useBodyScrollLock();
 
   // 표시할 색 스와치: 기본 팔레트 + 이미 카테고리가 쓰는 색 + 이번에 직접 추가한 색.
   const swatches = useMemo(() => {
@@ -170,14 +174,14 @@ export default function CategoryModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end justify-center bg-foreground/30 p-0 sm:items-center sm:p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/30 p-4"
       role="dialog"
       aria-modal="true"
       aria-label={isEdit ? '카테고리 수정' : '카테고리 추가'}
       onClick={onClose}
     >
       <div
-        className="w-full max-w-md rounded-t-2xl bg-card p-5 shadow-lg sm:rounded-2xl"
+        className="max-h-[92vh] w-full max-w-md overflow-y-auto rounded-2xl bg-card p-5 shadow-lg"
         onClick={(e) => e.stopPropagation()}
       >
         {/* 헤더: 닫기 · 제목 · 완료 */}

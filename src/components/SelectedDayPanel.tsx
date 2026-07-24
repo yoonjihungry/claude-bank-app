@@ -57,12 +57,14 @@ export default function SelectedDayPanel({ date, onClose }: Props) {
         </div>
       )}
 
-      {/* 이 패널은 이미 헤더에 날짜가 있어 각 행의 날짜·색 점은 중복이라 뺀다(뉴스캐시 시안). */}
+      {/* 이 패널은 이미 카드다. 행마다 카드를 또 두르면 '박스 속 박스'라 flush로 납작하게 그리고,
+          헤더에 날짜가 있어 각 행의 날짜·색 점도 중복이라 뺀다(뉴스캐시 시안). */}
       <TransactionList
         transactions={dayTx}
         onDelete={deleteTransaction}
         hideColorDot
         hideDate
+        flush
       />
     </section>
   );

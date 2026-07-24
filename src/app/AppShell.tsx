@@ -73,12 +73,12 @@ export default function AppShell({
         {/* 헤더 — 좌측 로고 + 우측 로그인/계정 영역(HeaderAuth) */}
         <header className="border-b border-border bg-card">
           <div className={`${CONTENT} flex items-center justify-between px-4 py-4`}>
-            <div className="flex items-center gap-2">
+            <Link href="/" aria-label="홈으로" className="flex items-center gap-2">
               <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary text-sm font-black text-primary-foreground">
                 ₩
               </span>
               <h1 className="text-xl font-bold">가계부</h1>
-            </div>
+            </Link>
             <HeaderAuth />
           </div>
         </header>

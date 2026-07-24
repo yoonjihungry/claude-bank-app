@@ -14,6 +14,9 @@ interface Props {
   hideColorDot?: boolean;
   /** 날짜를 숨긴다(단일 날짜 패널에서 중복이라 뺄 때). */
   hideDate?: boolean;
+  /** 행마다 카드(테두리·그림자)를 두르지 않고 구분선만 있는 납작한 목록으로 그린다.
+   *  이미 카드 안에 들어가는 선택일 패널에서 '박스 속 박스'를 피하려고 쓴다. */
+  flush?: boolean;
 }
 
 export default function TransactionList({
@@ -22,11 +25,14 @@ export default function TransactionList({
   onDelete,
   hideColorDot,
   hideDate,
+  flush,
 }: Props) {
   const { byId } = useCategories();
 
   if (transactions.length === 0) {
-    return (
+    return flush ? (
+      <p className="py-6 text-center text-sm text-muted-foreground">거래 내역이 없습니다.</p>
+    ) : (
       <p className="rounded-lg border border-dashed border-input p-8 text-center text-sm text-muted-foreground">
         거래 내역이 없습니다.
       </p>
@@ -34,7 +40,7 @@ export default function TransactionList({
   }
 
   return (
-    <ul className="flex flex-col gap-2">
+    <ul className={flush ? 'flex flex-col divide-y divide-border' : 'flex flex-col gap-2'}>
       {transactions.map((tx) => {
         const category = byId(tx.category);
         const isExpense = tx.type === 'expense';
@@ -42,7 +48,11 @@ export default function TransactionList({
         return (
           <li
             key={tx.id}
-            className="flex items-center gap-3 rounded-lg border border-border bg-card p-3 shadow-sm"
+            className={
+              flush
+                ? 'flex items-center gap-3 py-3 first:pt-0 last:pb-0'
+                : 'flex items-center gap-3 rounded-lg border border-border bg-card p-3 shadow-sm'
+            }
           >
             {!hideColorDot && (
               <span
@@ -51,16 +61,14 @@ export default function TransactionList({
               />
             )}
             <div className="min-w-0 flex-1">
-              <p className="truncate font-medium text-foreground">
-                {category?.name ?? '알 수 없음'}
-              </p>
-              <div className="mt-0.5 flex flex-wrap items-center gap-1.5">
-                {!hideDate && (
-                  <span className="text-xs text-muted-foreground">{formatDate(tx.date)}</span>
-                )}
+              {/* 카테고리 이름 오른쪽에 결제수단 뱃지를 붙인다(이름은 길면 …, 뱃지는 안 줄어듦). */}
+              <div className="flex min-w-0 items-center gap-1.5">
+                <p className="truncate font-medium text-foreground">
+                  {category?.name ?? '알 수 없음'}
+                </p>
                 {method && (
                   <span
-                    className={`rounded-full px-1.5 py-0.5 text-[11px] font-semibold ${
+                    className={`shrink-0 rounded-full px-1.5 py-0.5 text-[11px] font-semibold ${
                       method.id === 'credit'
                         ? 'bg-credit/10 text-credit'
                         : 'bg-muted text-muted-foreground'
@@ -69,17 +77,26 @@ export default function TransactionList({
                     {method.badge}
                   </span>
                 )}
-                {isExpense && tx.installmentMonths && tx.installmentMonths >= 2 && (
-                  <span className="rounded-full bg-credit/10 px-1.5 py-0.5 text-[11px] font-semibold text-credit">
-                    할부 {tx.installmentMonths}개월
-                  </span>
-                )}
-                {tx.recurringId && (
-                  <span className="rounded-full bg-primary/10 px-1.5 py-0.5 text-[11px] font-semibold text-primary">
-                    고정
-                  </span>
-                )}
               </div>
+              {(!hideDate ||
+                (isExpense && !!tx.installmentMonths && tx.installmentMonths >= 2) ||
+                !!tx.recurringId) && (
+                <div className="mt-0.5 flex flex-wrap items-center gap-1.5">
+                  {!hideDate && (
+                    <span className="text-xs text-muted-foreground">{formatDate(tx.date)}</span>
+                  )}
+                  {isExpense && tx.installmentMonths && tx.installmentMonths >= 2 && (
+                    <span className="rounded-full bg-credit/10 px-1.5 py-0.5 text-[11px] font-semibold text-credit">
+                      할부 {tx.installmentMonths}개월
+                    </span>
+                  )}
+                  {tx.recurringId && (
+                    <span className="rounded-full bg-primary/10 px-1.5 py-0.5 text-[11px] font-semibold text-primary">
+                      고정
+                    </span>
+                  )}
+                </div>
+              )}
               {tx.memo && (
                 <p className="truncate text-sm text-muted-foreground">{tx.memo}</p>
               )}
