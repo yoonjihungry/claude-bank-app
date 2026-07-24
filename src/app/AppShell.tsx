@@ -39,11 +39,20 @@ function GridIcon() {
     </svg>
   );
 }
+function UserIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <circle cx="12" cy="8" r="3.5" />
+      <path d="M5 19.5a7 7 0 0 1 14 0" />
+    </svg>
+  );
+}
 
 const TABS: { href: string; label: string; Icon: () => ReactNode }[] = [
   { href: '/', label: '홈', Icon: HomeIcon },
   { href: '/transactions', label: '거래', Icon: ExchangeIcon },
   { href: '/budget', label: '카테고리', Icon: GridIcon },
+  { href: '/mypage', label: '마이', Icon: UserIcon },
 ];
 
 /**
@@ -98,7 +107,7 @@ export default function AppShell({
           className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-card"
           style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
         >
-          <div className={`${CONTENT} grid grid-cols-3`}>
+          <div className={`${CONTENT} grid grid-cols-4`}>
             {TABS.map(({ href, label, Icon }) => {
               const active =
                 href === '/' ? pathname === '/' : pathname.startsWith(href);
