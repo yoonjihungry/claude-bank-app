@@ -28,6 +28,23 @@ export function formatSignedWon(amount: number): string {
   return `${sign}${formatWon(Math.abs(amount))}`;
 }
 
+/**
+ * 만/억 단위로 줄인 '원' 표기(차트 말풍선·도넛 중앙처럼 폭이 좁은 곳용).
+ * 예: 1,845,000 → '185만원', 123,400,000 → '1.2억원', 8,200 → '8,200원'.
+ */
+export function formatWonCompact(amount: number): string {
+  const abs = Math.abs(amount);
+  const sign = amount < 0 ? '−' : '';
+  if (abs >= 1e8) {
+    const uk = Math.round(abs / 1e7) / 10; // 억을 소수 첫째 자리까지
+    return `${sign}${uk.toLocaleString('ko-KR')}억원`;
+  }
+  if (abs >= 1e4) {
+    return `${sign}${Math.round(abs / 1e4).toLocaleString('ko-KR')}만원`;
+  }
+  return formatWon(amount);
+}
+
 /** ISO 'YYYY-MM-DD' → 'YYYY.MM.DD' */
 export function formatDate(iso: string): string {
   return format(parseISO(iso), 'yyyy.MM.dd');

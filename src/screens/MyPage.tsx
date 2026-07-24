@@ -60,7 +60,7 @@ export default function MyPage() {
       </section>
 
       <section className="flex flex-col gap-2">
-        <h2 className="text-lg font-semibold text-foreground">최근 6개월 추세</h2>
+        <h2 className="text-lg font-semibold text-foreground">최근 6개월 지출</h2>
         <MonthlyTrendChart data={trend.months} />
       </section>
 
