@@ -2,6 +2,12 @@
 
 의미 있는 변경 사항을 "날짜 — 무엇을 바꿨는지" 형식으로 최신순으로 기록한다.
 
+## 2026-07-27 — 본문 폰트를 Pretendard GOV → 표준 Pretendard로 교체
+
+공공기관용 변형인 `pretendard-gov` 대신 표준 `pretendard`를 쓴다. 숫자·일부 글리프가
+표준 형태로 바뀐다. `index.css`의 `@import`와 `--font-sans("Pretendard Variable")`,
+`layout.tsx` 주석을 갱신하고 안 쓰게 된 `pretendard-gov` 의존성을 제거했다.
+
 ## 2026-07-27 — 홈(대시보드) A안 리디자인: 예산 잔액 히어로 + 오늘 내역
 
 홈이 "앱답지 않고 밋밋하다"는 피드백으로 정보 위계를 재구성했다. 데이터·집계는 그대로 두고

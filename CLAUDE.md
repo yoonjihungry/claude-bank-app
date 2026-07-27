@@ -26,7 +26,7 @@
 
 ## Dependencies
 - 도메인: `recharts`, `date-fns`, `uuid`
-- 스타일: `tailwindcss`, `@tailwindcss/postcss`, `pretendard-gov`
+- 스타일: `tailwindcss`, `@tailwindcss/postcss`, `pretendard`
 - 인증/DB: `next-auth`(v5 beta), `@auth/prisma-adapter`, `@prisma/client`, `prisma`
 
 ## Directory Structure
