@@ -2,10 +2,12 @@
 
 import { useEffect, useState } from 'react';
 import { DEFAULT_PAYMENT_METHOD, PAYMENT_METHODS } from '../constants/paymentMethods';
+import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
 import { useCategories } from '../hooks/useCategories';
 import { useRecurring } from '../hooks/useRecurring';
 import type { PaymentMethod, RecurringRule, TxType } from '../types';
 import { currentMonth } from '../utils/dateRange';
+import { monthsBeforeCurrent } from '../utils/recurring';
 
 interface Props {
   /** 'add'면 신규 추가, 'edit'면 rule을 수정 */
@@ -41,6 +43,9 @@ export default function RecurringModal({ mode, rule, onClose }: Props) {
 
   const isEdit = mode === 'edit';
   const options = byType(type);
+
+  // 열려 있는 동안 뒤 배경 스크롤을 잠근다(화면 튐·끊김 방지).
+  useBodyScrollLock();
 
   // Escape로 닫기
   useEffect(() => {
@@ -78,7 +83,12 @@ export default function RecurringModal({ mode, rule, onClose }: Props) {
     if (isEdit && rule) {
       updateRecurringRule({ ...rule, ...base });
     } else {
-      addRecurringRule({ ...base, active: true, generatedMonths: [] });
+      // 지난 달은 소급 생성하지 않는다 — 이번 달 이전은 '이미 생성됨'으로 미리 채워 건너뛴다.
+      addRecurringRule({
+        ...base,
+        active: true,
+        generatedMonths: monthsBeforeCurrent(startMonth, currentMonth()),
+      });
     }
     onClose();
   }
@@ -88,14 +98,14 @@ export default function RecurringModal({ mode, rule, onClose }: Props) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end justify-center bg-foreground/30 p-0 sm:items-center sm:p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/30 p-4"
       role="dialog"
       aria-modal="true"
       aria-label={isEdit ? '반복 규칙 수정' : '반복 규칙 추가'}
       onClick={onClose}
     >
       <div
-        className="max-h-[92vh] w-full max-w-md overflow-y-auto rounded-t-2xl bg-card p-5 shadow-lg sm:rounded-2xl"
+        className="max-h-[92vh] w-full max-w-md overflow-y-auto rounded-2xl bg-card p-5 shadow-lg"
         onClick={(e) => e.stopPropagation()}
       >
         {/* 헤더: 닫기 · 제목 · 완료 */}

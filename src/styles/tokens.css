@@ -24,6 +24,12 @@
   --primary: 213 77% 56%;
   --primary-foreground: 0 0% 100%;
 
+  /* '오늘의 소비' 히어로 그라데이션 3-스톱 — primary(파랑) 계열로 밝게→진하게.
+     tokens.css 컨벤션대로 "H S% L%" 트리플릿으로 두고, 컴포넌트에서 hsl()로 감싸 합성한다. */
+  --hero-from: 213 82% 66%;
+  --hero-mid: 213 77% 56%;
+  --hero-to: 213 66% 45%;
+
   --income: 156 68% 42%;
   --income-foreground: 0 0% 100%;
 

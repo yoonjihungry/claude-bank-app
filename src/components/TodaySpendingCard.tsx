@@ -24,16 +24,6 @@ function RefreshIcon() {
   );
 }
 
-/** 돈주머니 + 아래 화살표 배지 아이콘 */
-function MoneyBagIcon({ className }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" className={className} fill="currentColor" aria-hidden="true">
-      <path d="M9 2h6l-1.2 2.4a1 1 0 0 1-.9.6h-1.8a1 1 0 0 1-.9-.6L9 2Z" opacity="0.85" />
-      <path d="M12 6c-3 2.2-5 5.2-5 8.4C7 18.6 9.2 21 12 21s5-2.4 5-6.6C17 11.2 15 8.2 12 6Z" />
-    </svg>
-  );
-}
-
 /**
  * 섹션 1 — 오늘의 소비 카드.
  * 항상 실제 오늘 기준(월 네비게이터와 무관). 어제 대비 증감을 함께 보여준다.
@@ -48,40 +38,45 @@ export default function TodaySpendingCard() {
   const [updatedAt, setUpdatedAt] = useState<Date | null>(null);
   useEffect(() => setUpdatedAt(new Date()), []);
 
-  // diff > 0: 어제보다 더 씀(지출↑) → expense, diff < 0: 덜 씀(절약) → income
-  const compareClass =
-    diff > 0 ? 'text-expense' : diff < 0 ? 'text-income' : 'text-muted-foreground';
+  // diff > 0: 어제보다 더 씀, diff < 0: 덜 씀(절약). 파란 히어로 위에선 색 대신 화살표로 방향만 표시한다.
+  const arrow = diff > 0 ? '↑' : diff < 0 ? '↓' : '';
 
   return (
-    <section className="rounded-2xl border border-border bg-card p-5 shadow-sm">
+    // 파란 그라데이션 히어로. 색은 tokens.css의 --hero-* 트리플릿을 hsl()로 감싸 합성한다.
+    <section
+      className="overflow-hidden rounded-2xl p-5 text-primary-foreground shadow-sm"
+      style={{
+        backgroundImage:
+          'linear-gradient(150deg, hsl(var(--hero-from)) 0%, hsl(var(--hero-mid)) 55%, hsl(var(--hero-to)) 100%)',
+      }}
+    >
       <div className="flex items-center justify-between">
-        <h2 className="font-semibold text-foreground">오늘의 소비</h2>
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+        <h2 className="font-semibold">오늘의 소비</h2>
+        <div className="flex items-center gap-2 text-xs text-primary-foreground/80">
           {/* 마운트 전에는 빈 자리를 유지해 시각이 채워질 때 레이아웃이 흔들리지 않게 한다. */}
           <span className="tabular-nums">
-            {updatedAt ? format(updatedAt, 'MM.dd HH:mm:ss') : ' '}
+            {updatedAt ? format(updatedAt, 'MM.dd HH:mm:ss') : ' '}
           </span>
           <button
             type="button"
             onClick={() => setUpdatedAt(new Date())}
             aria-label="새로고침"
-            className="rounded-full p-1 text-muted-foreground transition hover:bg-muted"
+            className="flex h-6 w-6 items-center justify-center rounded-full bg-primary-foreground/20 transition hover:bg-primary-foreground/30"
           >
             <RefreshIcon />
           </button>
         </div>
       </div>
 
-      <div className="mt-2 flex items-center gap-1">
-        <span className="text-3xl font-bold text-ink">{formatWon(todayExpense)}</span>
-        <span className="text-2xl text-muted-foreground">›</span>
+      <div className="mt-2">
+        <span className="text-4xl font-bold tracking-tight">{formatWon(todayExpense)}</span>
       </div>
 
-      <div className="mt-4 flex items-center justify-between rounded-xl bg-primary/10 px-4 py-3">
-        <span className="text-sm text-muted-foreground">
-          어제와 비교 <span className={`font-semibold ${compareClass}`}>{formatSignedWon(diff)}</span>
+      <div className="mt-4 inline-flex items-center gap-2 rounded-xl bg-primary-foreground/20 px-4 py-2.5 text-sm font-medium">
+        <span>
+          어제와 비교 <span className="font-bold">{formatSignedWon(diff)}</span>
         </span>
-        <MoneyBagIcon className={`h-6 w-6 ${compareClass}`} />
+        {arrow && <span aria-hidden="true">{arrow}</span>}
       </div>
     </section>
   );

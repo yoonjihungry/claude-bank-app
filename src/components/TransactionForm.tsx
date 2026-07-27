@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, type FormEvent } from 'react';
+import DatePickerField from './DatePickerField';
 import { INSTALLMENT_MONTHS } from '../constants/installments';
 import { DEFAULT_PAYMENT_METHOD, PAYMENT_METHODS } from '../constants/paymentMethods';
 import { useCategories } from '../hooks/useCategories';
@@ -133,15 +134,7 @@ export default function TransactionForm({ initial, onSubmit, onCancel }: Props) 
       <div className="grid grid-cols-2 gap-3">
         <label className="flex min-w-0 flex-col gap-1 text-sm text-muted-foreground">
           날짜
-          <input
-            type="date"
-            value={date}
-            onChange={(e) => setDate(e.target.value)}
-            // iOS Safari: 네이티브 date는 appearance를 끄지 않으면 width/min-width를
-            // 무시하고 고유 너비로 넘쳐 옆 칸을 덮는다. appearance-none으로 폭 제약을 따르게 함.
-            className={`${inputClass} appearance-none [-webkit-appearance:none]`}
-            required
-          />
+          <DatePickerField value={date} onChange={setDate} className={inputClass} />
         </label>
         <label className="flex min-w-0 flex-col gap-1 text-sm text-muted-foreground">
           카테고리

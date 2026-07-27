@@ -1,5 +1,6 @@
 'use client';
 
+import PeriodPickerField from './PeriodPickerField';
 import { useCategories } from '../hooks/useCategories';
 import type { TransactionFilter } from '../hooks/useTransactions';
 import type { TxType } from '../types';
@@ -37,18 +38,20 @@ export default function FilterBar({ filter, onChange }: Props) {
     filter.type != null ||
     filter.categoryId != null ||
     filter.month != null ||
+    filter.date != null ||
     filter.minAmount != null ||
     filter.maxAmount != null ||
-    (filter.keyword ?? '') !== '';
+    (filter.keyword ?? '') !== '' ||
+    filter.hideRecurring === true;
 
   return (
     <div className="flex flex-wrap items-center gap-2 rounded-lg border border-border bg-card p-3 shadow-sm">
-      <input
-        type="month"
-        value={filter.month ?? ''}
-        onChange={(e) => patch({ month: e.target.value || undefined })}
+      <PeriodPickerField
+        month={filter.month}
+        date={filter.date}
+        onChange={(next) => patch(next)}
         className={controlClass}
-        aria-label="월"
+        id="period-filter"
       />
 
       <select
@@ -107,6 +110,16 @@ export default function FilterBar({ filter, onChange }: Props) {
         className={`${controlClass} flex-1`}
         aria-label="메모 검색"
       />
+
+      <label className="flex items-center gap-1.5 whitespace-nowrap px-1 text-sm text-muted-foreground">
+        <input
+          type="checkbox"
+          checked={filter.hideRecurring ?? false}
+          onChange={(e) => patch({ hideRecurring: e.target.checked || undefined })}
+          className="h-4 w-4 accent-primary"
+        />
+        고정거래 숨기기
+      </label>
 
       {isActive && (
         <button

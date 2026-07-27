@@ -14,7 +14,9 @@ import { currentMonth } from '../utils/dateRange';
 
 export default function TransactionsPage() {
   const { addTransaction, updateTransaction, deleteTransaction } = useLedger();
-  const [filter, setFilter] = useState<TransactionFilter>({});
+  // 기본은 이번 달만 본다(전체 기간을 쏟아내면 매달 쌓이는 고정거래로 목록이 지저분해진다).
+  // 다른 달은 FilterBar의 월 선택기로 이동한다.
+  const [filter, setFilter] = useState<TransactionFilter>({ month: currentMonth() });
   const transactions = useTransactions(filter);
   const [editing, setEditing] = useState<Transaction | null>(null);
 

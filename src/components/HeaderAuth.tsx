@@ -23,7 +23,7 @@ export default function HeaderAuth() {
         <button
           type="button"
           onClick={() => setSheetOpen(true)}
-          className="rounded-md border border-input px-3 py-1.5 text-sm font-medium text-muted-foreground transition hover:bg-muted"
+          className="rounded-full bg-primary/10 px-4 py-1.5 text-sm font-semibold text-primary transition hover:bg-primary/15"
         >
           로그인
         </button>

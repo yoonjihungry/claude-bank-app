@@ -34,10 +34,8 @@ export default function DashboardPage() {
         onSelectDate={setSelectedDate}
       />
 
-      {/* 날짜 선택 시 그 날의 내역 */}
-      {selectedDate && (
-        <SelectedDayPanel date={selectedDate} onClose={() => setSelectedDate(null)} />
-      )}
+      {/* 날짜 선택 시 그 날의 내역(헤더를 눌러 접었다 펼치는 아코디언) */}
+      {selectedDate && <SelectedDayPanel date={selectedDate} />}
 
       {/* 섹션 3 — 이번달 소비금액 (선택 월, 구매 기준 전액) */}
       <MonthlySpendingCard expense={stats.totalExpense} creditCard={stats.creditCardTotal} />
