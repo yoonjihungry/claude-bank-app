@@ -3,8 +3,6 @@
 import {
   Bar,
   BarChart,
-  Cell,
-  LabelList,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -22,12 +20,19 @@ function monthTick(month: string): string {
   return `${Number(month.slice(5, 7))}월`;
 }
 
+/** value>0인 달만 평균을 낸다(거래 없는 달이 평균을 끌어내리지 않게). */
+function averageOf(data: MonthlyTotals[], pick: (d: MonthlyTotals) => number): number {
+  const active = data.filter((d) => pick(d) > 0);
+  if (active.length === 0) return 0;
+  return Math.round(active.reduce((s, d) => s + pick(d), 0) / active.length);
+}
+
 /**
- * 최근 몇 개월의 월별 '지출' 막대. 마지막(기준) 달만 primary로 강조하고 값 말풍선을 띄운다.
- * 나머지 달은 muted 회색. 색은 tokens.css의 --primary / --muted / --foreground를 따른다.
+ * 최근 몇 개월의 월별 '수입·지출' 그룹 막대. 수입은 --income(초록), 지출은 --expense(코랄).
+ * 아래에 월 평균 수입/지출을 함께 보여준다. 색은 tokens.css 토큰을 따른다.
  */
 export default function MonthlyTrendChart({ data }: Props) {
-  const hasData = data.some((d) => d.expense > 0);
+  const hasData = data.some((d) => d.expense > 0 || d.income > 0);
   if (!hasData) {
     return (
       <div className="flex h-64 items-center justify-center rounded-lg border border-dashed border-input text-sm text-muted-foreground">
@@ -36,61 +41,28 @@ export default function MonthlyTrendChart({ data }: Props) {
     );
   }
 
-  const activeIndex = data.length - 1;
-  const spentMonths = data.filter((d) => d.expense > 0);
-  const avg = Math.round(
-    spentMonths.reduce((s, d) => s + d.expense, 0) / spentMonths.length,
-  );
-
-  const primary = tokenColor('primary');
-  const muted = tokenColor('muted');
-  const foreground = tokenColor('foreground');
-
-  /** 기준 달 막대 위에만 뜨는 값 말풍선(SVG). */
-  const renderBubble = (props: {
-    x?: number | string;
-    y?: number | string;
-    width?: number | string;
-    value?: unknown;
-    index?: number;
-  }) => {
-    if (props.index !== activeIndex) return null;
-    const x = Number(props.x);
-    const y = Number(props.y);
-    const width = Number(props.width);
-    const cx = x + width / 2;
-    const text = formatWonCompact(Number(props.value));
-    const w = text.length * 8.5 + 16;
-    const h = 22;
-    const left = cx - w / 2;
-    const top = y - h - 9;
-    return (
-      <g>
-        <rect x={left} y={top} width={w} height={h} rx={7} fill={foreground} />
-        <text
-          x={cx}
-          y={top + h / 2 + 1}
-          textAnchor="middle"
-          dominantBaseline="central"
-          fontSize={12}
-          fontWeight={700}
-          fill="#fff"
-        >
-          {text}
-        </text>
-        <polygon
-          points={`${cx - 4},${top + h} ${cx + 4},${top + h} ${cx},${top + h + 5}`}
-          fill={foreground}
-        />
-      </g>
-    );
-  };
+  const income = tokenColor('income');
+  const expense = tokenColor('expense');
+  const avgIncome = averageOf(data, (d) => d.income);
+  const avgExpense = averageOf(data, (d) => d.expense);
 
   return (
     <div className="rounded-lg border border-border bg-card p-3 shadow-sm">
-      <div className="h-56 w-full">
+      {/* 범례 */}
+      <div className="mb-1 flex items-center justify-end gap-3 text-xs text-muted-foreground">
+        <span className="flex items-center gap-1.5">
+          <span className="h-2.5 w-2.5 rounded-[3px] bg-income" />
+          수입
+        </span>
+        <span className="flex items-center gap-1.5">
+          <span className="h-2.5 w-2.5 rounded-[3px] bg-expense" />
+          지출
+        </span>
+      </div>
+
+      <div className="h-52 w-full">
         <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={data} margin={{ top: 36, right: 8, left: 8, bottom: 0 }}>
+          <BarChart data={data} margin={{ top: 12, right: 8, left: 8, bottom: 0 }} barGap={2}>
             <XAxis
               dataKey="month"
               tickFormatter={monthTick}
@@ -101,24 +73,32 @@ export default function MonthlyTrendChart({ data }: Props) {
             />
             <Tooltip
               cursor={{ fill: 'transparent' }}
-              formatter={(value) => [formatWon(Number(value)), '지출']}
+              formatter={(value, name) => [
+                formatWon(Number(value)),
+                name === 'income' ? '수입' : '지출',
+              ]}
               labelFormatter={(label) => monthTick(String(label))}
             />
-            <Bar dataKey="expense" radius={8} barSize={18} isAnimationActive={false}>
-              {data.map((d, i) => (
-                <Cell key={d.month} fill={i === activeIndex ? primary : muted} />
-              ))}
-              <LabelList dataKey="expense" content={renderBubble} />
-            </Bar>
+            <Bar dataKey="income" fill={income} radius={[4, 4, 0, 0]} barSize={12} isAnimationActive={false} />
+            <Bar dataKey="expense" fill={expense} radius={[4, 4, 0, 0]} barSize={12} isAnimationActive={false} />
           </BarChart>
         </ResponsiveContainer>
       </div>
 
-      <div className="mt-3 flex items-center justify-between rounded-xl bg-muted/60 px-4 py-3">
-        <span className="text-sm font-semibold text-muted-foreground">월 평균 지출</span>
-        <span className="text-base font-bold text-primary tabular-nums">
-          {formatWonCompact(avg)}
-        </span>
+      {/* 월 평균 수입 · 지출 */}
+      <div className="mt-3 grid grid-cols-2 gap-2">
+        <div className="flex items-center justify-between rounded-xl bg-muted/60 px-4 py-3">
+          <span className="text-sm font-semibold text-muted-foreground">월 평균 수입</span>
+          <span className="text-base font-bold text-income tabular-nums">
+            {formatWonCompact(avgIncome)}
+          </span>
+        </div>
+        <div className="flex items-center justify-between rounded-xl bg-muted/60 px-4 py-3">
+          <span className="text-sm font-semibold text-muted-foreground">월 평균 지출</span>
+          <span className="text-base font-bold text-expense tabular-nums">
+            {formatWonCompact(avgExpense)}
+          </span>
+        </div>
       </div>
     </div>
   );

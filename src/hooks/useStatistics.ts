@@ -1,6 +1,9 @@
 import { useMemo } from 'react';
 import { installmentAmount, isLumpSum } from '../constants/installments';
+import { PAYMENT_METHODS } from '../constants/paymentMethods';
 import { useLedger } from '../context/LedgerContext';
+import type { PaymentMethod } from '../types';
+import { currentMonth, monthDays, todayISO } from '../utils/dateRange';
 
 /** 'YYYY-MM'을 개월 인덱스(연*12+월)로 변환해 월 간격 계산에 쓴다. */
 function monthIndex(ym: string): number {
@@ -12,6 +15,13 @@ export interface CategorySlice {
   categoryId: string;
   name: string;
   color: string;
+  value: number;
+}
+
+/** 결제수단별 지출 한 조각. method가 'none'이면 미지정. 색은 뷰(토큰)에서 정한다. */
+export interface MethodSlice {
+  method: PaymentMethod | 'none';
+  label: string;
   value: number;
 }
 
@@ -62,10 +72,18 @@ export interface Statistics {
   creditBillingItems: CreditBillItem[];
   /** 선택 월의 지출을 카테고리별로 집계(내림차순, 0원 제외) */
   expenseByCategory: CategorySlice[];
+  /** 선택 월의 수입을 카테고리별로 집계(내림차순, 0원 제외) */
+  incomeByCategory: CategorySlice[];
+  /** 선택 월의 지출을 결제수단별로 집계(내림차순, 0원 제외) */
+  expenseByMethod: MethodSlice[];
   /** 선택 월의 거래가 있는 날짜별 순액·누적 추이(날짜 오름차순) */
   dailyTrend: DailyTrendPoint[];
   /** 선택 월에 예산이 설정된 카테고리의 사용 현황(사용률 내림차순) */
   budgetUsage: BudgetUsage[];
+  /** 하루 평균 지출(당월은 오늘까지 경과일, 지난달은 그 달 전체 일수로 나눔) */
+  avgDailyExpense: number;
+  /** 저축률 = 잔액 ÷ 수입 (수입 0이면 0). 음수(적자)일 수 있다 */
+  savingsRate: number;
 }
 
 /** 사용률(spent/limit)로 예산 상태를 판정한다. >=1 초과, >=0.8 주의. */
@@ -88,6 +106,8 @@ export function useStatistics(month: string): Statistics {
     let totalExpense = 0;
     let creditCardTotal = 0;
     const expenseMap = new Map<string, number>();
+    const incomeMap = new Map<string, number>();
+    const methodMap = new Map<PaymentMethod | 'none', number>();
     // 선택 월의 날짜별 순액(수입 − 지출)
     const dailyNet = new Map<string, number>();
 
@@ -100,9 +120,12 @@ export function useStatistics(month: string): Statistics {
 
       if (tx.type === 'income') {
         totalIncome += tx.amount;
+        incomeMap.set(tx.category, (incomeMap.get(tx.category) ?? 0) + tx.amount);
       } else {
         totalExpense += tx.amount;
         expenseMap.set(tx.category, (expenseMap.get(tx.category) ?? 0) + tx.amount);
+        const mkey = tx.method ?? 'none';
+        methodMap.set(mkey, (methodMap.get(mkey) ?? 0) + tx.amount);
         if (tx.method === 'credit') {
           creditCardTotal += tx.amount;
         }
@@ -158,17 +181,43 @@ export function useStatistics(month: string): Statistics {
         return { date, net, cumulative: running };
       });
 
-    const expenseByCategory: CategorySlice[] = [...expenseMap.entries()]
-      .map(([categoryId, value]) => {
-        const cat = categoryById.get(categoryId);
-        return {
-          categoryId,
-          name: cat?.name ?? '알 수 없음',
-          color: cat?.color ?? '#9ca3af',
-          value,
-        };
-      })
-      .sort((a, b) => b.value - a.value);
+    /** Map<categoryId, 합계>를 카테고리 메타로 살 붙여 내림차순 조각 배열로. */
+    const toCategorySlices = (map: Map<string, number>): CategorySlice[] =>
+      [...map.entries()]
+        .map(([categoryId, value]) => {
+          const cat = categoryById.get(categoryId);
+          return {
+            categoryId,
+            name: cat?.name ?? '알 수 없음',
+            color: cat?.color ?? '#9ca3af',
+            value,
+          };
+        })
+        .sort((a, b) => b.value - a.value);
+
+    const expenseByCategory = toCategorySlices(expenseMap);
+    const incomeByCategory = toCategorySlices(incomeMap);
+
+    // 표준 결제수단(현금·체크·신용)은 안 쓴 달에도 0원으로 항상 표시한다.
+    // '미지정'은 실제로 있을 때만 덧붙인다. 큰 금액 순으로 정렬.
+    const noneAmount = methodMap.get('none') ?? 0;
+    const expenseByMethod: MethodSlice[] = [
+      ...PAYMENT_METHODS.map((m) => ({
+        method: m.id,
+        label: m.label,
+        value: methodMap.get(m.id) ?? 0,
+      })),
+      ...(noneAmount > 0
+        ? [{ method: 'none' as const, label: '미지정', value: noneAmount }]
+        : []),
+    ].sort((a, b) => b.value - a.value);
+
+    // 하루 평균 지출 — 당월은 오늘까지 경과일, 그 외 달은 그 달 전체 일수로 나눈다.
+    const elapsedDays =
+      month === currentMonth() ? Number(todayISO().slice(8, 10)) : monthDays(month).length;
+    const avgDailyExpense = elapsedDays > 0 ? Math.round(totalExpense / elapsedDays) : 0;
+
+    const savingsRate = totalIncome > 0 ? (totalIncome - totalExpense) / totalIncome : 0;
 
     const budgetUsage: BudgetUsage[] = budgets
       .filter((b) => b.month === month)
@@ -196,8 +245,12 @@ export function useStatistics(month: string): Statistics {
       creditBillingTotal,
       creditBillingItems,
       expenseByCategory,
+      incomeByCategory,
+      expenseByMethod,
       dailyTrend,
       budgetUsage,
+      avgDailyExpense,
+      savingsRate,
     };
   }, [transactions, budgets, categories, month]);
 }

@@ -6,13 +6,17 @@ import { formatCurrency, formatWonCompact } from '../utils/format';
 
 interface Props {
   data: CategorySlice[];
+  /** 지출/수입 중 무엇을 그리는지 — 중앙 라벨과 빈 문구만 바뀐다(기본 지출). */
+  kind?: 'expense' | 'income';
 }
 
-export default function CategoryChart({ data }: Props) {
+export default function CategoryChart({ data, kind = 'expense' }: Props) {
+  const noun = kind === 'income' ? '수입' : '지출';
+
   if (data.length === 0) {
     return (
       <div className="flex h-64 items-center justify-center rounded-lg border border-dashed border-input text-sm text-muted-foreground">
-        이 달의 지출이 없습니다.
+        이 달의 {noun}이 없습니다.
       </div>
     );
   }
@@ -46,7 +50,7 @@ export default function CategoryChart({ data }: Props) {
 
           {/* 도넛 가운데 총 지출 — SVG viewBox 대신 HTML 오버레이로 확실히 중앙 정렬 */}
           <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center gap-0.5">
-            <span className="text-[11px] text-muted-foreground">총 지출</span>
+            <span className="text-[11px] text-muted-foreground">총 {noun}</span>
             <span className="text-base font-bold text-foreground tabular-nums">
               {formatWonCompact(total)}
             </span>
