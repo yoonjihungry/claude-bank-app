@@ -1,47 +1,57 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo } from 'react';
+import BudgetHeroCard from '../components/BudgetHeroCard';
 import CreditBillingCard from '../components/CreditBillingCard';
+import IncomeSummaryLine from '../components/IncomeSummaryLine';
 import MonthlySpendingCard from '../components/MonthlySpendingCard';
-import SelectedDayPanel from '../components/SelectedDayPanel';
-import TodaySpendingCard from '../components/TodaySpendingCard';
-import TransactionCalendar from '../components/TransactionCalendar';
+import TodayTransactions from '../components/TodayTransactions';
+import { useDailySpending } from '../hooks/useDailySpending';
 import { useStatistics } from '../hooks/useStatistics';
-import { currentMonth, todayISO } from '../utils/dateRange';
+import { useTransactions } from '../hooks/useTransactions';
+import { currentMonth, shiftMonth, todayISO } from '../utils/dateRange';
 
+/**
+ * 홈(대시보드) — '예산 잔액 히어로' 중심의 A안 구성.
+ * 위(매번 보는 상태)→아래(궁금하면 보는 상세) 순서:
+ * 예산 히어로 → 이번 달 수입 → 이번 달 소비 → 카드 청구 예정 → 오늘 내역.
+ * 항상 이번 달 기준이라 월 네비게이터를 두지 않는다.
+ */
 export default function DashboardPage() {
-  const [month, setMonth] = useState(currentMonth());
-  // 진입 시 오늘 날짜를 선택해 당일 수입/지출 내역이 바로 보이게 한다.
-  const [selectedDate, setSelectedDate] = useState<string | null>(todayISO());
+  const month = currentMonth();
   const stats = useStatistics(month);
+  const prevStats = useStatistics(shiftMonth(month, -1));
+  const daily = useDailySpending();
+  const todayTx = useTransactions({ date: todayISO() });
 
-  // 월을 바꾸면 다른 달의 선택은 해제한다.
-  function handleMonthChange(next: string) {
-    setMonth(next);
-    setSelectedDate(null);
-  }
+  // 이번 달 예산 합계 = 카테고리별 예산(월)의 총합. 훅이 이미 계산한 budgetUsage를 더한다.
+  const budgetTotal = useMemo(
+    () => stats.budgetUsage.reduce((sum, b) => sum + b.limit, 0),
+    [stats.budgetUsage],
+  );
 
   return (
-    <div className="flex flex-col gap-6">
-      {/* 섹션 1 — 오늘의 소비 (항상 실제 오늘 기준) */}
-      <TodaySpendingCard />
+    <div className="flex flex-col gap-4">
+      <BudgetHeroCard budgetTotal={budgetTotal} spent={stats.totalExpense} />
 
-      {/* 섹션 2 — 거래 캘린더 (선택 월) */}
-      <TransactionCalendar
-        month={month}
-        onChange={handleMonthChange}
-        selectedDate={selectedDate}
-        onSelectDate={setSelectedDate}
+      <IncomeSummaryLine
+        income={stats.totalIncome}
+        delta={stats.totalIncome - prevStats.totalIncome}
       />
 
-      {/* 날짜 선택 시 그 날의 내역(헤더를 눌러 접었다 펼치는 아코디언) */}
-      {selectedDate && <SelectedDayPanel date={selectedDate} />}
+      <MonthlySpendingCard
+        expense={stats.totalExpense}
+        creditCard={stats.creditCardTotal}
+        categories={stats.expenseByCategory}
+      />
 
-      {/* 섹션 3 — 이번달 소비금액 (선택 월, 구매 기준 전액) */}
-      <MonthlySpendingCard expense={stats.totalExpense} creditCard={stats.creditCardTotal} />
-
-      {/* 섹션 4 — 이번 달 카드 청구 예정 (할부 회차분 반영) */}
       <CreditBillingCard total={stats.creditBillingTotal} items={stats.creditBillingItems} />
+
+      <TodayTransactions
+        todayExpense={daily.todayExpense}
+        diff={daily.diff}
+        transactions={todayTx}
+      />
     </div>
   );
 }
