@@ -2,6 +2,18 @@
 
 의미 있는 변경 사항을 "날짜 — 무엇을 바꿨는지" 형식으로 최신순으로 기록한다.
 
+## 2026-07-29 — 카카오 로그인 연동 추가
+
+Google에 이어 카카오(Auth.js Kakao provider)를 로그인 수단으로 추가. DB 스키마는 provider 범용
+구조라 변경 없음. `Account` 테이블에 provider만 하나 더 붙는다.
+
+- `lib/auth.ts`: `providers`에 `Kakao` 추가(`AUTH_KAKAO_ID`/`AUTH_KAKAO_SECRET` 자동 인식).
+- `LoginSheet`: "카카오로 계속하기" 버튼 추가(`signIn('kakao')`). 카카오 브랜드 규정색(#FEE500)을
+  `--kakao`/`--kakao-foreground` 토큰으로 `tokens.css`·`index.css`에 추가 — 앱 단색 시스템의 의도적 예외.
+- `.env.example`: `AUTH_KAKAO_ID`(REST API 키)·`AUTH_KAKAO_SECRET`(카카오 로그인 클라이언트 시크릿) 문서화.
+- 콘솔: Redirect URI에 `/api/auth/callback/kakao`(로컬·프로덕션) 등록. 이름·아바타는 카카오 동의항목
+  (닉네임/프로필 사진)을 켜야 받으며, 안 켜면 이름이 비어 헤더에 '사용자'로 표시된다.
+
 ## 2026-07-29 — 프로필 아바타 이미지 깨짐 수정
 
 일부 Google 계정에서 헤더/마이페이지 아바타가 깨진 이미지 아이콘으로 표시되던 문제 수정.

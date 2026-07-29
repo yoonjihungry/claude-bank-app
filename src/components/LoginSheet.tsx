@@ -107,6 +107,18 @@ export default function LoginSheet({
           Google로 계속하기
         </button>
 
+        {/* 카카오 계속하기 — 브랜드 규정상 노란색(#FEE500, --kakao 토큰) + 근검정 글자 */}
+        <button
+          type="button"
+          onClick={() => signIn('kakao')}
+          className="mt-3 flex h-[50px] w-full items-center justify-center gap-2.5 rounded-xl bg-kakao text-sm font-semibold text-kakao-foreground transition hover:brightness-95"
+        >
+          <svg viewBox="0 0 24 24" fill="currentColor" className="h-[18px] w-[18px] shrink-0" aria-hidden="true">
+            <path d="M12 3C6.48 3 2 6.48 2 10.8c0 2.74 1.83 5.15 4.6 6.52-.15.53-.7 2.5-.8 2.9-.13.48.18.47.37.34.15-.1 2.4-1.63 3.38-2.3.47.07.96.1 1.45.1 5.52 0 10-3.48 10-7.8S17.52 3 12 3z" />
+          </svg>
+          카카오로 계속하기
+        </button>
+
         <button
           type="button"
           onClick={onClose}
