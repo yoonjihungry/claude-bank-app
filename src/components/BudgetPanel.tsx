@@ -2,27 +2,14 @@
 
 import { useLedger } from '../context/LedgerContext';
 import { useCategories } from '../hooks/useCategories';
-import { budgetStatus, useStatistics, type BudgetStatus } from '../hooks/useStatistics';
+import { useStatistics } from '../hooks/useStatistics';
 import type { Category } from '../types';
-import { formatCurrency } from '../utils/format';
 
 interface Props {
   month: string; // 'YYYY-MM'
   /** 톱니바퀴 클릭 시 그 카테고리를 현재 예산 한도와 함께 넘긴다. */
   onEdit: (category: Category, limit: number) => void;
 }
-
-const STATUS_BAR: Record<BudgetStatus, string> = {
-  ok: 'bg-income',
-  warning: 'bg-warning',
-  over: 'bg-destructive',
-};
-
-const STATUS_TEXT: Record<BudgetStatus, string> = {
-  ok: 'text-muted-foreground',
-  warning: 'text-warning-foreground',
-  over: 'text-destructive',
-};
 
 interface RowProps {
   category: Category;
@@ -31,38 +18,47 @@ interface RowProps {
   onEdit: (category: Category, limit: number) => void;
 }
 
+/**
+ * 예산 한 줄 — 색점 없이 이름·사용률·진행바만. 진행바는 단색(파랑),
+ * 초과일 때만 잉크 태그로 구분한다(상태색 초록/주황/빨강 미사용).
+ */
 function BudgetRow({ category, limit, spent, onEdit }: RowProps) {
   const ratio = limit > 0 ? spent / limit : 0;
-  const status = budgetStatus(ratio);
+  const over = ratio > 1;
 
   return (
-    <div className="flex items-center gap-3 rounded-lg border border-border bg-card p-3 shadow-sm">
-      <span
-        className="h-3 w-3 shrink-0 rounded-full"
-        style={{ backgroundColor: category.color }}
-      />
-
+    <div className="flex items-center gap-3 border-t border-border py-3.5 first:border-t-0">
       <div className="min-w-0 flex-1">
-        <div className="flex items-baseline justify-between gap-3">
-          <span className="font-medium text-foreground">{category.name}</span>
+        <div className="flex items-baseline justify-between gap-2">
+          <span className="flex items-center gap-1.5 text-sm font-bold text-foreground">
+            {category.name}
+            {over && (
+              <span className="shrink-0 rounded bg-foreground px-1.5 py-0.5 text-[10px] font-bold text-background">
+                초과
+              </span>
+            )}
+          </span>
           {limit > 0 && (
-            <span className={`shrink-0 text-xs tabular-nums ${STATUS_TEXT[status]}`}>
-              {formatCurrency(spent)} / {formatCurrency(limit)} · {Math.round(ratio * 100)}%
-              {status === 'over' && ' · 초과'}
-              {status === 'warning' && ' · 주의'}
+            <span
+              className={`shrink-0 text-[11.5px] font-semibold tabular-nums ${
+                over ? 'text-foreground' : 'text-muted-foreground'
+              }`}
+            >
+              {spent.toLocaleString('ko-KR')} / {limit.toLocaleString('ko-KR')} ·{' '}
+              {Math.round(ratio * 100)}%
             </span>
           )}
         </div>
 
         {limit > 0 ? (
-          <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-muted">
+          <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-muted">
             <div
-              className={`h-full rounded-full transition-all ${STATUS_BAR[status]}`}
+              className="h-full rounded-full bg-primary transition-all"
               style={{ width: `${Math.min(ratio, 1) * 100}%` }}
             />
           </div>
         ) : (
-          <p className="mt-1 text-xs text-muted-foreground">
+          <p className="mt-1 text-[11.5px] text-muted-foreground">
             예산 미설정 — 톱니바퀴로 한도를 설정하세요
           </p>
         )}
@@ -98,7 +94,7 @@ export default function BudgetPanel({ month, onEdit }: Props) {
   );
 
   return (
-    <div className="flex flex-col gap-2">
+    <div className="rounded-2xl bg-card px-4 shadow-sm">
       {byType('expense').map((category) => (
         <BudgetRow
           key={category.id}
