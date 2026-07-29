@@ -9,6 +9,7 @@ import LoginSheet from './LoginSheet';
 export default function ProfileCard() {
   const { data: session, status } = useSession();
   const [sheetOpen, setSheetOpen] = useState(false);
+  const [imgError, setImgError] = useState(false);
 
   if (status === 'loading') {
     // 세션 확인 중 — 자리만 유지(레이아웃 흔들림 방지)
@@ -58,10 +59,18 @@ export default function ProfileCard() {
 
   return (
     <div className="flex items-center gap-3 rounded-2xl bg-card p-4 shadow-sm">
-      {image ? (
-        // 프로필 이미지(Google) — 외부 도메인이라 next/image 최적화 대신 일반 img 사용
+      {image && !imgError ? (
+        // 프로필 이미지(Google) — 외부 도메인이라 next/image 최적화 대신 일반 img 사용.
+        // Google 이미지 서버는 referrer 붙은 요청에 429를 자주 돌려주므로 no-referrer로 요청하고,
+        // 그래도 실패하면 onError로 이니셜 아바타 폴백으로 넘어간다(깨진 이미지 아이콘 방지).
         // eslint-disable-next-line @next/next/no-img-element
-        <img src={image} alt="" className="h-12 w-12 shrink-0 rounded-full" />
+        <img
+          src={image}
+          alt=""
+          referrerPolicy="no-referrer"
+          onError={() => setImgError(true)}
+          className="h-12 w-12 shrink-0 rounded-full"
+        />
       ) : (
         <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-primary text-lg font-semibold text-primary-foreground">
           {label.slice(0, 1)}
