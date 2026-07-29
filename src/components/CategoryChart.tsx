@@ -2,6 +2,7 @@
 
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts';
 import type { CategorySlice } from '../hooks/useStatistics';
+import { blueRamp } from '../utils/chartColor';
 import { formatCurrency, formatWonCompact } from '../utils/format';
 
 interface Props {
@@ -22,9 +23,11 @@ export default function CategoryChart({ data, kind = 'expense' }: Props) {
   }
 
   const total = data.reduce((s, d) => s + d.value, 0);
+  // 데이터는 값 내림차순 → 큰 조각부터 진한 파랑을 배정한다(무지개색 대신 파랑 농담).
+  const ramp = blueRamp(data.length);
 
   return (
-    <div className="rounded-lg border border-border bg-card p-4 shadow-sm">
+    <div className="rounded-2xl bg-card p-4 shadow-sm">
       <div className="flex items-center gap-4">
         <div className="relative h-40 w-40 shrink-0">
           <ResponsiveContainer width="100%" height="100%">
@@ -40,8 +43,8 @@ export default function CategoryChart({ data, kind = 'expense' }: Props) {
                 endAngle={-270}
                 isAnimationActive={false}
               >
-                {data.map((slice) => (
-                  <Cell key={slice.categoryId} fill={slice.color} />
+                {data.map((slice, i) => (
+                  <Cell key={slice.categoryId} fill={ramp[i]} />
                 ))}
               </Pie>
               <Tooltip formatter={(value) => formatCurrency(Number(value))} />
@@ -58,11 +61,11 @@ export default function CategoryChart({ data, kind = 'expense' }: Props) {
         </div>
 
         <ul className="flex flex-1 flex-col gap-2">
-          {data.map((slice) => (
+          {data.map((slice, i) => (
             <li key={slice.categoryId} className="flex items-center gap-2 text-sm">
               <span
                 className="h-2.5 w-2.5 shrink-0 rounded-[3px]"
-                style={{ backgroundColor: slice.color }}
+                style={{ backgroundColor: ramp[i] }}
               />
               <span className="truncate text-foreground">{slice.name}</span>
               <span className="ml-auto font-bold text-muted-foreground tabular-nums">

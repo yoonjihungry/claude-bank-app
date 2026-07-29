@@ -128,7 +128,7 @@ export default function BudgetPage() {
             <button
               type="button"
               onClick={() => setRecurringModal({ mode: 'add' })}
-              className="flex items-center justify-center gap-1.5 rounded-lg border border-primary/35 bg-primary/5 py-2.5 text-sm font-semibold text-primary transition hover:bg-primary/10"
+              className="flex items-center justify-center gap-1.5 rounded-xl border border-dashed border-border bg-muted/40 py-2.5 text-sm font-bold text-foreground transition hover:bg-muted"
             >
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" className="h-4 w-4">
                 <path d="M12 5v14M5 12h14" />

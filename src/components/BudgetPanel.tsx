@@ -58,9 +58,7 @@ function BudgetRow({ category, limit, spent, onEdit }: RowProps) {
             />
           </div>
         ) : (
-          <p className="mt-1 text-[11.5px] text-muted-foreground">
-            예산 미설정 — 톱니바퀴로 한도를 설정하세요
-          </p>
+          <p className="mt-1 text-[11.5px] text-muted-foreground">예산 미설정</p>
         )}
       </div>
 

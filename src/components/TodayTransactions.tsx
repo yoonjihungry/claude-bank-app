@@ -57,9 +57,6 @@ export default function TodayTransactions({ todayExpense, diff, transactions }: 
                   key={tx.id}
                   className="flex items-center gap-3 border-t border-border py-2.5 first:border-t-0"
                 >
-                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-muted">
-                    <span className="h-2.5 w-2.5 rounded-full bg-muted-foreground" />
-                  </span>
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-[13.5px] font-semibold text-foreground">
                       {tx.memo || cat?.name || '미분류'}
