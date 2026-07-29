@@ -2,9 +2,8 @@
 
 import { useMemo } from 'react';
 import BudgetHeroCard from '../components/BudgetHeroCard';
-import CreditBillingCard from '../components/CreditBillingCard';
-import IncomeSummaryLine from '../components/IncomeSummaryLine';
-import MonthlySpendingCard from '../components/MonthlySpendingCard';
+import MonthGlanceCard from '../components/MonthGlanceCard';
+import QuickMenu from '../components/QuickMenu';
 import TodayTransactions from '../components/TodayTransactions';
 import { useDailySpending } from '../hooks/useDailySpending';
 import { useStatistics } from '../hooks/useStatistics';
@@ -12,9 +11,9 @@ import { useTransactions } from '../hooks/useTransactions';
 import { currentMonth, shiftMonth, todayISO } from '../utils/dateRange';
 
 /**
- * 홈(대시보드) — '예산 잔액 히어로' 중심의 A안 구성.
- * 위(매번 보는 상태)→아래(궁금하면 보는 상세) 순서:
- * 예산 히어로 → 이번 달 수입 → 이번 달 소비 → 카드 청구 예정 → 오늘 내역.
+ * 홈(대시보드) — 카카오페이 톤 재구성.
+ * 위(매번 보는 것)→아래(궁금하면 보는 것) 순서:
+ * 옐로 히어로(쓸 수 있는 돈) → 빠른 메뉴 → 오늘 소비 → 이번 달 한눈에(소비·수입·카드청구 3줄).
  * 항상 이번 달 기준이라 월 네비게이터를 두지 않는다.
  */
 export default function DashboardPage() {
@@ -34,23 +33,20 @@ export default function DashboardPage() {
     <div className="flex flex-col gap-4">
       <BudgetHeroCard budgetTotal={budgetTotal} spent={stats.totalExpense} />
 
-      <IncomeSummaryLine
-        income={stats.totalIncome}
-        delta={stats.totalIncome - prevStats.totalIncome}
-      />
-
-      <MonthlySpendingCard
-        expense={stats.totalExpense}
-        creditCard={stats.creditCardTotal}
-        categories={stats.expenseByCategory}
-      />
-
-      <CreditBillingCard total={stats.creditBillingTotal} items={stats.creditBillingItems} />
+      <QuickMenu />
 
       <TodayTransactions
         todayExpense={daily.todayExpense}
         diff={daily.diff}
         transactions={todayTx}
+      />
+
+      <MonthGlanceCard
+        expense={stats.totalExpense}
+        income={stats.totalIncome}
+        incomeDelta={stats.totalIncome - prevStats.totalIncome}
+        creditBilling={stats.creditBillingTotal}
+        topCategories={stats.expenseByCategory}
       />
     </div>
   );

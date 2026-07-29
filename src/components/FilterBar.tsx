@@ -8,12 +8,14 @@ import type { TxType } from '../types';
 interface Props {
   filter: TransactionFilter;
   onChange: (filter: TransactionFilter) => void;
+  /** 시트 안에서 쓸 때 자체 카드(테두리·그림자)를 두르지 않는다. */
+  bare?: boolean;
 }
 
 const controlClass =
   'rounded-md border border-input px-2 py-1.5 text-sm focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring';
 
-export default function FilterBar({ filter, onChange }: Props) {
+export default function FilterBar({ filter, onChange, bare }: Props) {
   const { all, byType, byId } = useCategories();
   // 타입이 지정되면 그 타입의 카테고리만, 아니면 전체 카테고리를 보여준다.
   const categoryOptions = filter.type ? byType(filter.type) : all;
@@ -45,7 +47,13 @@ export default function FilterBar({ filter, onChange }: Props) {
     filter.hideRecurring === true;
 
   return (
-    <div className="flex flex-wrap items-center gap-2 rounded-lg border border-border bg-card p-3 shadow-sm">
+    <div
+      className={
+        bare
+          ? 'flex flex-wrap items-center gap-2'
+          : 'flex flex-wrap items-center gap-2 rounded-lg border border-border bg-card p-3 shadow-sm'
+      }
+    >
       <PeriodPickerField
         month={filter.month}
         date={filter.date}

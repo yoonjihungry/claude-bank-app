@@ -20,7 +20,7 @@ function CheckIcon() {
  * 홈 히어로 — '이번 달 쓸 수 있는 돈'.
  * 예산 합계에서 지출을 뺀 잔액과 사용률 진행바를 보여준다.
  * 예산이 하나도 없으면 진행바 없이 '이번 달 소비'(지출 합계)를 크게 보여줘 빈 화면을 피한다.
- * 색은 tokens.css의 --hero-* 트리플릿을 hsl()로 감싸 합성한다.
+ * 색은 카카오페이 옐로(--accent) 단색. 글자·진행바는 근검정(--accent-foreground).
  */
 export default function BudgetHeroCard({ budgetTotal, spent }: Props) {
   const hasBudget = budgetTotal > 0;
@@ -30,37 +30,32 @@ export default function BudgetHeroCard({ budgetTotal, spent }: Props) {
   const over = hasBudget && spent > budgetTotal;
 
   return (
-    <section
-      className="overflow-hidden rounded-3xl p-5 text-primary-foreground shadow-sm"
-      style={{
-        backgroundImage:
-          'linear-gradient(150deg, hsl(var(--hero-from)) 0%, hsl(var(--hero-mid)) 55%, hsl(var(--hero-to)) 100%)',
-      }}
-    >
+    <section className="overflow-hidden rounded-2xl bg-card p-5 shadow-sm">
       <div className="flex items-center justify-between gap-2">
-        <p className="text-[13px] font-medium text-primary-foreground/90">
+        <p className="text-[13px] font-semibold text-muted-foreground">
           {hasBudget ? '이번 달 쓸 수 있는 돈' : '이번 달 소비'}
         </p>
         {hasBudget && (
-          <span className="inline-flex items-center gap-1 rounded-full bg-primary-foreground/20 px-2.5 py-1 text-[10.5px] font-bold">
+          <span className="inline-flex items-center gap-1 rounded-full bg-accent px-2.5 py-1 text-[10.5px] font-bold text-accent-foreground">
             {over ? '예산 초과' : pct < 80 ? (<><CheckIcon />잘하고 있어요</>) : '거의 다 썼어요'}
           </span>
         )}
       </div>
 
-      <p className="mt-1.5 text-[34px] font-extrabold tracking-tight tabular-nums">
-        {formatWon(hasBudget ? remaining : spent)}
+      <p className="mt-1.5 flex items-baseline text-[34px] font-extrabold tracking-tight tabular-nums text-ink">
+        {(hasBudget ? remaining : spent).toLocaleString('ko-KR')}
+        <span className="ml-1 text-base font-bold text-muted-foreground">원</span>
       </p>
 
       {hasBudget && (
         <>
-          <div className="mt-3 h-3 overflow-hidden rounded-full bg-primary-foreground/25">
+          <div className="mt-3 h-2.5 overflow-hidden rounded-full bg-muted">
             <div
-              className="h-full rounded-full bg-primary-foreground"
+              className="h-full rounded-full bg-accent"
               style={{ width: `${barWidth}%` }}
             />
           </div>
-          <div className="mt-2.5 flex justify-between text-[11.5px] text-primary-foreground/90 tabular-nums">
+          <div className="mt-2.5 flex justify-between text-[11.5px] font-medium text-muted-foreground tabular-nums">
             <span>
               {formatWon(spent)} 사용 ({pct}%)
             </span>

@@ -9,18 +9,13 @@ interface Props {
   items: CreditBillItem[];
 }
 
-/** 신용카드 아이콘 */
-function CardIcon() {
-  return (
-    <svg viewBox="0 0 256 256" className="h-4 w-4" fill="currentColor" aria-hidden="true">
-      <path d="M224,48H32A16,16,0,0,0,16,64V192a16,16,0,0,0,16,16H224a16,16,0,0,0,16-16V64A16,16,0,0,0,224,48ZM136,176H120a8,8,0,0,1,0-16h16a8,8,0,0,1,0,16Zm64,0H168a8,8,0,0,1,0-16h32a8,8,0,0,1,0,16ZM32,88V64H224V88Z" />
-    </svg>
-  );
-}
-
 /**
  * 이번 달 카드 청구 예정 — 신용카드 후불 결제를 청구 시점 기준으로 보여준다.
  * 할부는 이번 달 회차분(예: 3/6)만 합산하고, 각 항목에 회차를 표시한다.
+ *
+ * 색 규칙: 금액·총액·이름은 잉크색(text-foreground/ink)으로 또렷하게 두고,
+ * 신용(보라, --credit)은 '할부 회차 배지'에만 액센트로 남긴다. 결제수단은 색이 아니라
+ * 라벨로 구분한다.
  */
 export default function CreditBillingCard({ total, items }: Props) {
   return (
@@ -29,19 +24,19 @@ export default function CreditBillingCard({ total, items }: Props) {
         <HighlightTitle>카드 청구 예정</HighlightTitle>
       </div>
 
-      <div className="rounded-3xl border border-border bg-card p-4 shadow-sm">
+      <div className="rounded-2xl bg-card p-4 shadow-sm">
         <div className="flex items-end justify-between">
           <span className="text-xs text-muted-foreground">이달 청구 · 결제일에 빠져나가요</span>
-          <span className="text-xl font-extrabold tabular-nums text-credit">{formatWon(total)}</span>
+          <span className="text-xl font-extrabold tabular-nums text-ink">
+            {total.toLocaleString('ko-KR')}
+            <span className="ml-0.5 text-[0.6em] font-semibold text-muted-foreground">원</span>
+          </span>
         </div>
 
         {items.length > 0 ? (
           <ul className="mt-3 flex flex-col gap-3">
             {items.map((item) => (
               <li key={item.id} className="flex items-center gap-2.5 text-sm">
-                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-credit/10 text-credit">
-                  <CardIcon />
-                </span>
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-1.5">
                     <span className="truncate font-medium text-foreground">{item.name}</span>
@@ -53,7 +48,7 @@ export default function CreditBillingCard({ total, items }: Props) {
                   </div>
                   {item.memo && <p className="truncate text-xs text-muted-foreground">{item.memo}</p>}
                 </div>
-                <span className="shrink-0 font-semibold tabular-nums text-credit">
+                <span className="shrink-0 font-semibold tabular-nums text-ink">
                   {formatWon(item.amount)}
                 </span>
               </li>

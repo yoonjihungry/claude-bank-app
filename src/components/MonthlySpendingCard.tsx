@@ -28,7 +28,7 @@ export default function MonthlySpendingCard({ expense, creditCard, categories }:
         <span className="text-xs text-muted-foreground">통계 ›</span>
       </div>
 
-      <div className="rounded-3xl border border-border bg-card p-4 shadow-sm">
+      <div className="rounded-2xl bg-card p-4 shadow-sm">
         {expense > 0 ? (
           <>
             <ul className="flex flex-col gap-3">
