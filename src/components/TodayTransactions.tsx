@@ -1,8 +1,8 @@
 'use client';
 
+import Link from 'next/link';
 import type { Transaction } from '../types';
 import { useCategories } from '../hooks/useCategories';
-import HighlightTitle from './HighlightTitle';
 import { formatWon } from '../utils/format';
 
 interface Props {
@@ -31,14 +31,18 @@ export default function TodayTransactions({ todayExpense, diff, transactions }: 
 
   return (
     <section className="flex flex-col gap-2">
-      <div className="px-0.5">
-        <HighlightTitle>오늘 내역</HighlightTitle>
+      <div className="flex items-center justify-between px-0.5">
+        <h2 className="text-[15px] font-extrabold tracking-tight text-ink">오늘 소비</h2>
+        <Link href="/transactions" className="text-xs font-semibold text-muted-foreground">
+          전체 ›
+        </Link>
       </div>
 
-      <div className="rounded-3xl border border-border bg-card px-4 shadow-sm">
+      <div className="rounded-2xl bg-card px-4 shadow-sm">
         <div className="flex items-baseline justify-between border-b border-dashed border-border py-3.5">
-          <b className="text-lg font-extrabold tabular-nums text-expense">
-            −{formatWon(todayExpense)}
+          <b className="text-xl font-extrabold tabular-nums text-ink">
+            −{todayExpense.toLocaleString('ko-KR')}
+            <span className="ml-0.5 text-[0.6em] font-semibold text-muted-foreground">원</span>
           </b>
           <span className="text-[11.5px] text-muted-foreground">{diffText}</span>
         </div>
@@ -53,16 +57,6 @@ export default function TodayTransactions({ todayExpense, diff, transactions }: 
                   key={tx.id}
                   className="flex items-center gap-3 border-t border-border py-2.5 first:border-t-0"
                 >
-                  <span
-                    className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ${
-                      isExpense ? 'bg-expense/10' : 'bg-income/10'
-                    }`}
-                  >
-                    <span
-                      className="h-2.5 w-2.5 rounded-full"
-                      style={{ backgroundColor: cat?.color ?? 'hsl(var(--muted-foreground))' }}
-                    />
-                  </span>
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-[13.5px] font-semibold text-foreground">
                       {tx.memo || cat?.name || '미분류'}
@@ -73,11 +67,14 @@ export default function TodayTransactions({ todayExpense, diff, transactions }: 
                   </div>
                   <span
                     className={`shrink-0 font-extrabold tabular-nums ${
-                      isExpense ? 'text-expense' : 'text-income'
+                      isExpense ? 'text-ink' : 'text-income'
                     }`}
                   >
                     {isExpense ? '−' : '+'}
-                    {formatWon(tx.amount)}
+                    {tx.amount.toLocaleString('ko-KR')}
+                    <span className="ml-0.5 text-[0.72em] font-semibold text-muted-foreground">
+                      원
+                    </span>
                   </span>
                 </li>
               );

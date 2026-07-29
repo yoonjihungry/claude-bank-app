@@ -53,7 +53,7 @@ export default function DailyTrendChart({ data, lineOnly = false }: Props) {
   const showLabels = data.length <= 8;
 
   return (
-    <div className="h-64 w-full rounded-lg border border-border bg-card p-2 shadow-sm">
+    <div className="h-64 w-full rounded-2xl bg-card p-2 shadow-sm">
       <ResponsiveContainer width="100%" height="100%">
         <ComposedChart data={data} margin={{ top: 24, right: 12, left: 12, bottom: 0 }}>
           <XAxis dataKey="date" tickFormatter={dayTick} fontSize={12} tickLine={false} />

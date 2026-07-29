@@ -6,7 +6,9 @@ import CategoryModal from '../components/CategoryModal';
 import MonthNavigator from '../components/MonthNavigator';
 import RecurringModal from '../components/RecurringModal';
 import RecurringPanel from '../components/RecurringPanel';
+import { useLedger } from '../context/LedgerContext';
 import { useRecurring } from '../hooks/useRecurring';
+import { useStatistics } from '../hooks/useStatistics';
 import type { Category, RecurringRule } from '../types';
 import { currentMonth } from '../utils/dateRange';
 
@@ -25,28 +27,62 @@ export default function BudgetPage() {
   const [recurringModal, setRecurringModal] = useState<RecurringModalState>(null);
   const [recurringOpen, setRecurringOpen] = useState(false);
   const { all: rules } = useRecurring();
+  const { budgets } = useLedger();
+  const stats = useStatistics(month);
+
+  // 이번 달 예산 합계(카테고리별 한도의 합) 대비 지출 — 상단 요약 카드용.
+  const budgetTotal = budgets
+    .filter((b) => b.month === month)
+    .reduce((sum, b) => sum + b.limit, 0);
+  const spent = stats.totalExpense;
+  const pct = budgetTotal > 0 ? Math.round((spent / budgetTotal) * 100) : 0;
+  const remaining = budgetTotal - spent;
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-4">
       <MonthNavigator month={month} onChange={setMonth} />
-      <div>
-        <div className="mb-1 flex items-center justify-between gap-3">
-          <h2 className="text-lg font-semibold text-foreground">카테고리별 예산</h2>
+
+      {budgetTotal > 0 && (
+        <section className="rounded-2xl bg-card p-4 shadow-sm">
+          <div className="flex items-baseline justify-between">
+            <p className="text-xs font-semibold text-muted-foreground">이번 달 예산 사용</p>
+            <span className="text-xs font-bold text-primary tabular-nums">{pct}%</span>
+          </div>
+          <p className="mt-1.5 flex items-baseline text-2xl font-extrabold tabular-nums text-ink">
+            {spent.toLocaleString('ko-KR')}
+            <span className="ml-0.5 text-[0.6em] font-semibold text-muted-foreground">원</span>
+          </p>
+          <p className="mt-0.5 text-[11.5px] font-medium text-muted-foreground tabular-nums">
+            예산 {budgetTotal.toLocaleString('ko-KR')}원 ·{' '}
+            {remaining >= 0
+              ? `${remaining.toLocaleString('ko-KR')}원 남음`
+              : `${Math.abs(remaining).toLocaleString('ko-KR')}원 초과`}
+          </p>
+          <div className="mt-3 h-2 overflow-hidden rounded-full bg-muted">
+            <div
+              className="h-full rounded-full bg-primary"
+              style={{ width: `${Math.min(pct, 100)}%` }}
+            />
+          </div>
+        </section>
+      )}
+
+      <div className="flex flex-col gap-2">
+        <div className="flex items-center justify-between gap-3 px-0.5">
+          <h2 className="text-[15px] font-extrabold tracking-tight text-ink">카테고리별 예산</h2>
           <button
             type="button"
             onClick={() => setModal({ mode: 'add' })}
-            aria-label="카테고리 추가"
-            className="flex h-9 w-9 items-center justify-center rounded-lg border border-primary/35 bg-primary/5 text-primary transition hover:bg-primary/10"
+            className="flex items-center gap-1.5 text-xs font-bold text-primary"
           >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" className="h-5 w-5">
-              <path d="M12 5v14M5 12h14" />
-            </svg>
+            <span className="flex h-5 w-5 items-center justify-center rounded-md bg-primary text-primary-foreground">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" className="h-3.5 w-3.5">
+                <path d="M12 5v14M5 12h14" />
+              </svg>
+            </span>
+            추가
           </button>
         </div>
-        <p className="mb-3 text-sm text-muted-foreground">
-          지출 카테고리를 추가·수정하고 이 달의 한도를 설정하세요. 사용률이 80%를 넘으면 주의,
-          100%를 넘으면 초과로 표시됩니다.
-        </p>
         <BudgetPanel
           month={month}
           onEdit={(category, limit) => setModal({ mode: 'edit', category, limit })}
@@ -92,7 +128,7 @@ export default function BudgetPage() {
             <button
               type="button"
               onClick={() => setRecurringModal({ mode: 'add' })}
-              className="flex items-center justify-center gap-1.5 rounded-lg border border-primary/35 bg-primary/5 py-2.5 text-sm font-semibold text-primary transition hover:bg-primary/10"
+              className="flex items-center justify-center gap-1.5 rounded-xl border border-dashed border-border bg-muted/40 py-2.5 text-sm font-bold text-foreground transition hover:bg-muted"
             >
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" className="h-4 w-4">
                 <path d="M12 5v14M5 12h14" />

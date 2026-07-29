@@ -36,7 +36,7 @@ export default function RecurringPanel({ onEdit }: Props) {
 
   if (rules.length === 0) {
     return (
-      <p className="rounded-lg border border-dashed border-border bg-card px-4 py-8 text-center text-sm text-muted-foreground">
+      <p className="rounded-2xl border border-dashed border-border bg-card px-4 py-8 text-center text-sm text-muted-foreground">
         아직 등록한 고정거래가 없습니다.
         <br />
         월세·구독료·급여처럼 매달 반복되는 항목을 추가해보세요.
@@ -60,7 +60,7 @@ export default function RecurringPanel({ onEdit }: Props) {
   }
 
   return (
-    <ul className="flex flex-col gap-2">
+    <ul className="rounded-2xl bg-card px-4 shadow-sm">
       {rules.map((rule) => {
         const cat = byId(rule.category);
         const badge = rule.type === 'expense' ? methodBadge(rule.method) : undefined;
@@ -68,7 +68,7 @@ export default function RecurringPanel({ onEdit }: Props) {
         return (
           <li
             key={rule.id}
-            className={`flex items-center gap-3 rounded-lg border border-border bg-card p-3 shadow-sm transition ${
+            className={`flex items-center gap-3 border-t border-border py-3 transition first:border-t-0 ${
               rule.active ? '' : 'opacity-55'
             }`}
           >
@@ -77,10 +77,6 @@ export default function RecurringPanel({ onEdit }: Props) {
               onClick={() => onEdit(rule)}
               className="flex min-w-0 flex-1 items-center gap-3 text-left"
             >
-              <span
-                className="h-3 w-3 shrink-0 rounded-full"
-                style={{ backgroundColor: cat?.color ?? 'hsl(var(--muted-foreground))' }}
-              />
               <span className="flex min-w-0 flex-col">
                 <span className="flex items-center gap-1.5">
                   <span className="truncate text-sm font-medium text-foreground">

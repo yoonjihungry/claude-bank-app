@@ -69,17 +69,19 @@ function MetricCell({
   label: string;
   value: string;
   hint?: string;
-  tone: 'income' | 'expense' | 'foreground';
+  tone: 'income' | 'expense' | 'foreground' | 'accent';
 }) {
   const valueColor =
-    tone === 'income'
-      ? 'text-income'
-      : tone === 'expense'
-        ? 'text-expense'
-        : 'text-foreground';
+    tone === 'accent'
+      ? 'text-primary'
+      : tone === 'income'
+        ? 'text-income'
+        : tone === 'expense'
+          ? 'text-expense'
+          : 'text-foreground';
 
   return (
-    <div className="flex flex-col gap-1 rounded-lg border border-border bg-card px-4 py-3 shadow-sm">
+    <div className="flex flex-col gap-1 rounded-2xl bg-card px-4 py-3 shadow-sm">
       <span className="text-xs text-muted-foreground">{label}</span>
       <span className={`text-lg font-bold tabular-nums ${valueColor}`}>{value}</span>
       {hint && <span className="text-[11px] text-muted-foreground">{hint}</span>}
@@ -158,7 +160,7 @@ export default function MyPage() {
       <MonthNavigator month={month} onChange={setMonth} />
 
       {/* 이번 달 요약 + 전월 대비 */}
-      <section className="grid grid-cols-3 divide-x divide-border rounded-lg border border-border bg-card shadow-sm">
+      <section className="grid grid-cols-3 divide-x divide-border rounded-2xl bg-card shadow-sm">
         <SummaryCell label="수입" amount={trend.current.income} delta={trend.delta.income} tone="income" />
         <SummaryCell label="지출" amount={trend.current.expense} delta={trend.delta.expense} tone="expense" />
         <SummaryCell label="잔액" amount={trend.current.net} delta={trend.delta.net} tone="foreground" />
@@ -166,12 +168,7 @@ export default function MyPage() {
 
       {/* 핵심 지표 — 저축률 · 하루 평균 지출 */}
       <section className="grid grid-cols-2 gap-3">
-        <MetricCell
-          label="저축률"
-          value={savingsText}
-          hint="잔액 ÷ 수입"
-          tone={stats.savingsRate >= 0 ? 'income' : 'expense'}
-        />
+        <MetricCell label="저축률" value={savingsText} hint="잔액 ÷ 수입" tone="accent" />
         <MetricCell
           label="하루 평균 지출"
           value={formatWon(stats.avgDailyExpense)}
@@ -181,13 +178,13 @@ export default function MyPage() {
       </section>
 
       <section className="flex flex-col gap-2">
-        <h2 className="text-lg font-semibold text-foreground">최근 6개월 수입·지출</h2>
+        <h2 className="text-[15px] font-extrabold tracking-tight text-ink">최근 6개월 수입·지출</h2>
         <MonthlyTrendChart data={trend.months} />
       </section>
 
       <section className="flex flex-col gap-2">
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-foreground">카테고리별 {catKind === 'income' ? '수입' : '지출'}</h2>
+          <h2 className="text-[15px] font-extrabold tracking-tight text-ink">카테고리별 {catKind === 'income' ? '수입' : '지출'}</h2>
           <div className="flex gap-1.5">
             <Chip active={catKind === 'expense'} onClick={() => setCatKind('expense')}>
               지출
@@ -201,13 +198,13 @@ export default function MyPage() {
       </section>
 
       <section className="flex flex-col gap-2">
-        <h2 className="text-lg font-semibold text-foreground">결제수단별 지출</h2>
+        <h2 className="text-[15px] font-extrabold tracking-tight text-ink">결제수단별 지출</h2>
         <PaymentMethodBar data={stats.expenseByMethod} />
       </section>
 
       <section className="flex flex-col gap-2">
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-foreground">일자별 수입·지출 추이</h2>
+          <h2 className="text-[15px] font-extrabold tracking-tight text-ink">일자별 수입·지출 추이</h2>
           {weekRange && <span className="text-xs text-muted-foreground">{weekRange}</span>}
         </div>
 

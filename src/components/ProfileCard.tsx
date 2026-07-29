@@ -12,7 +12,7 @@ export default function ProfileCard() {
 
   if (status === 'loading') {
     // 세션 확인 중 — 자리만 유지(레이아웃 흔들림 방지)
-    return <div className="h-[76px] animate-pulse rounded-lg bg-muted" />;
+    return <div className="h-[76px] animate-pulse rounded-2xl bg-muted" />;
   }
 
   if (!session?.user) {
@@ -21,10 +21,13 @@ export default function ProfileCard() {
         <button
           type="button"
           onClick={() => setSheetOpen(true)}
-          className="flex w-full items-center gap-3 rounded-lg border border-border bg-card p-4 text-left shadow-sm transition hover:bg-muted/40"
+          className="flex w-full items-center gap-3 rounded-2xl bg-card p-4 text-left shadow-sm transition hover:bg-muted/40"
         >
-          <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-primary/10 text-2xl">
-            👤
+          <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="h-6 w-6">
+              <circle cx="12" cy="8" r="3.5" />
+              <path d="M5 19.5a7 7 0 0 1 14 0" />
+            </svg>
           </span>
           <span className="flex min-w-0 flex-col">
             <span className="text-base font-bold text-foreground">로그인하기</span>
@@ -54,7 +57,7 @@ export default function ProfileCard() {
   const label = name ?? email ?? '사용자';
 
   return (
-    <div className="flex items-center gap-3 rounded-lg border border-border bg-card p-4 shadow-sm">
+    <div className="flex items-center gap-3 rounded-2xl bg-card p-4 shadow-sm">
       {image ? (
         // 프로필 이미지(Google) — 외부 도메인이라 next/image 최적화 대신 일반 img 사용
         // eslint-disable-next-line @next/next/no-img-element

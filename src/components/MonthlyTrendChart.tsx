@@ -8,6 +8,7 @@ import {
   XAxis,
 } from 'recharts';
 import type { MonthlyTotals } from '../hooks/useMonthlyTrend';
+import { SERIES_EXPENSE, SERIES_INCOME } from '../utils/chartColor';
 import { formatWon, formatWonCompact } from '../utils/format';
 import { tokenColor } from '../utils/tokenColor';
 
@@ -41,21 +42,22 @@ export default function MonthlyTrendChart({ data }: Props) {
     );
   }
 
-  const income = tokenColor('income');
-  const expense = tokenColor('expense');
+  // 수입 vs 지출을 파랑 두 농담으로 구분한다(지출=진파랑, 수입=연파랑).
+  const income = SERIES_INCOME;
+  const expense = SERIES_EXPENSE;
   const avgIncome = averageOf(data, (d) => d.income);
   const avgExpense = averageOf(data, (d) => d.expense);
 
   return (
-    <div className="rounded-lg border border-border bg-card p-3 shadow-sm">
+    <div className="rounded-2xl bg-card p-3 shadow-sm">
       {/* 범례 */}
       <div className="mb-1 flex items-center justify-end gap-3 text-xs text-muted-foreground">
         <span className="flex items-center gap-1.5">
-          <span className="h-2.5 w-2.5 rounded-[3px] bg-income" />
+          <span className="h-2.5 w-2.5 rounded-[3px]" style={{ backgroundColor: income }} />
           수입
         </span>
         <span className="flex items-center gap-1.5">
-          <span className="h-2.5 w-2.5 rounded-[3px] bg-expense" />
+          <span className="h-2.5 w-2.5 rounded-[3px]" style={{ backgroundColor: expense }} />
           지출
         </span>
       </div>

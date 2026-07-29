@@ -1,4 +1,4 @@
-import { formatSignedWon, formatWon } from '../utils/format';
+import { formatSignedWon } from '../utils/format';
 
 interface Props {
   /** 이번 달 수입 합계 */
@@ -21,7 +21,7 @@ function TrendUpIcon() {
  */
 export default function IncomeSummaryLine({ income, delta }: Props) {
   return (
-    <div className="flex items-center gap-3 rounded-2xl border border-border bg-card p-3.5 shadow-sm">
+    <div className="flex items-center gap-3 rounded-2xl bg-card p-3.5 shadow-sm">
       <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-income/10 text-income">
         <TrendUpIcon />
       </span>
@@ -29,7 +29,10 @@ export default function IncomeSummaryLine({ income, delta }: Props) {
         <p className="text-[13.5px] font-bold text-ink">이번 달 수입</p>
         <p className="text-[11.5px] text-muted-foreground">지난달 대비 {formatSignedWon(delta)}</p>
       </div>
-      <span className="font-extrabold tabular-nums text-income">{formatWon(income)}</span>
+      <span className="font-extrabold tabular-nums text-income">
+        {income.toLocaleString('ko-KR')}
+        <span className="ml-0.5 text-[0.72em] font-semibold text-muted-foreground">원</span>
+      </span>
     </div>
   );
 }

@@ -253,9 +253,9 @@ export default function TransactionForm({ initial, onSubmit, onCancel }: Props) 
       <div className="flex gap-2">
         <button
           type="submit"
-          className="flex-1 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90"
+          className="flex-1 rounded-xl bg-accent px-4 py-3 text-[15px] font-bold text-accent-foreground transition hover:bg-accent/90"
         >
-          {isEdit ? '수정 완료' : '추가'}
+          {isEdit ? '수정 완료' : '기록하기'}
         </button>
         {onCancel && (
           <button

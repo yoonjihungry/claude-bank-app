@@ -34,6 +34,9 @@
   --color-credit: hsl(var(--credit));
   --color-credit-foreground: hsl(var(--credit-foreground));
 
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+
   --color-destructive: hsl(var(--destructive));
   --color-destructive-foreground: hsl(var(--destructive-foreground));
 

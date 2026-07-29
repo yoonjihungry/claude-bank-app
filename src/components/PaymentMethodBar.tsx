@@ -1,24 +1,13 @@
 'use client';
 
 // 결제수단별 지출 분해 — 가로 스택 바 + 범례(금액·비율).
-// 색은 결제수단마다 tokens.css 토큰을 배정한다: 현금=warning, 체크=primary, 신용=credit, 미지정=회색.
+// 색은 무지개 대신 '파랑 한 색의 농담' — 금액이 큰 결제수단일수록 진한 파랑을 배정한다.
 import type { MethodSlice } from '../hooks/useStatistics';
+import { rankedBlueByKey } from '../utils/chartColor';
 import { formatWon } from '../utils/format';
 
 interface Props {
   data: MethodSlice[];
-}
-
-/** 결제수단 → 디자인 토큰 변수명. */
-const METHOD_VAR: Record<string, string> = {
-  cash: '--warning',
-  check: '--primary',
-  credit: '--credit',
-  none: '--muted-foreground',
-};
-
-function colorOf(method: string): string {
-  return `hsl(var(${METHOD_VAR[method] ?? '--muted-foreground'}))`;
 }
 
 export default function PaymentMethodBar({ data }: Props) {
@@ -26,14 +15,19 @@ export default function PaymentMethodBar({ data }: Props) {
 
   if (total === 0) {
     return (
-      <div className="flex h-24 items-center justify-center rounded-lg border border-dashed border-input text-sm text-muted-foreground">
+      <div className="flex h-24 items-center justify-center rounded-2xl border border-dashed border-input text-sm text-muted-foreground">
         이 달의 지출이 없습니다.
       </div>
     );
   }
 
+  // 금액 순위로 파랑 농담 배정(큰 값 = 진한 파랑).
+  const shadeByMethod = rankedBlueByKey(data, (d) => d.method, (d) => d.value);
+  const colorOf = (method: string) =>
+    shadeByMethod.get(method) ?? 'hsl(var(--muted-foreground))';
+
   return (
-    <div className="rounded-lg border border-border bg-card p-4 shadow-sm">
+    <div className="rounded-2xl bg-card p-4 shadow-sm">
       {/* 스택 바 — 금액 있는 조각만(0원은 범례에만 남긴다) */}
       <div className="flex h-3 w-full gap-0.5 overflow-hidden rounded-full">
         {data

@@ -104,7 +104,7 @@ export default function AppShell({
 
         {/* 하단 고정 탭바 — 화면 하단 밀착(full-width 사각 + 상단 보더). 버튼 행은 콘텐츠 폭 유지 */}
         <nav
-          className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-card"
+          className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-card shadow-[0_-6px_18px_rgba(30,40,60,0.08)]"
           style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
         >
           <div className={`${CONTENT} grid grid-cols-4`}>
