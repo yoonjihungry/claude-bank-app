@@ -29,32 +29,26 @@ function defaultWeek(month: string): number | 'all' {
   return weekBlock(Number(todayISO().slice(8, 10)));
 }
 
-/** 요약 숫자 한 칸(제목·금액·전월 대비). */
-function SummaryCell({
+/** 요약 한 줄(왼쪽 제목·전월 대비 / 오른쪽 금액).
+    큰 금액이 좁은 칸에서 줄바꿈으로 깨지지 않도록 3열 그리드 대신 세로 리스트로 둔다. */
+function SummaryRow({
   label,
   amount,
   delta,
-  tone,
 }: {
   label: string;
   amount: number;
   delta: number;
-  tone: 'income' | 'expense' | 'foreground';
 }) {
-  const amountColor =
-    tone === 'income'
-      ? 'text-income'
-      : tone === 'expense'
-        ? 'text-expense'
-        : 'text-foreground';
-
   return (
-    <div className="flex flex-col items-center gap-1 px-2 py-3">
-      <span className="text-xs text-muted-foreground">{label}</span>
-      <span className={`text-base font-bold ${amountColor}`}>{formatWon(amount)}</span>
-      <span className="text-xs text-muted-foreground">
-        전월 {formatSignedWon(delta)}
-      </span>
+    <div className="flex items-center justify-between py-3">
+      <div>
+        <p className="text-[13px] font-semibold text-ink">{label}</p>
+        <p className="mt-1 text-[11px] text-muted-foreground">
+          전월 대비 {formatSignedWon(delta)}
+        </p>
+      </div>
+      <span className="text-base font-bold text-ink">{formatWon(amount)}</span>
     </div>
   );
 }
@@ -159,11 +153,11 @@ export default function MyPage() {
 
       <MonthNavigator month={month} onChange={setMonth} />
 
-      {/* 이번 달 요약 + 전월 대비 */}
-      <section className="grid grid-cols-3 divide-x divide-border rounded-2xl bg-card shadow-sm">
-        <SummaryCell label="수입" amount={trend.current.income} delta={trend.delta.income} tone="income" />
-        <SummaryCell label="지출" amount={trend.current.expense} delta={trend.delta.expense} tone="expense" />
-        <SummaryCell label="잔액" amount={trend.current.net} delta={trend.delta.net} tone="foreground" />
+      {/* 이번 달 요약 + 전월 대비 — 세로 리스트(항목 사이 구분선) */}
+      <section className="flex flex-col divide-y divide-border rounded-2xl bg-muted px-4.5 py-1.5">
+        <SummaryRow label="수입" amount={trend.current.income} delta={trend.delta.income} />
+        <SummaryRow label="지출" amount={trend.current.expense} delta={trend.delta.expense} />
+        <SummaryRow label="잔액" amount={trend.current.net} delta={trend.delta.net} />
       </section>
 
       {/* 핵심 지표 — 저축률 · 하루 평균 지출 */}
