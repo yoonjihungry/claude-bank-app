@@ -3,6 +3,24 @@
 주요 설계 결정을 "배경 / 대안 / 결정 이유" 형식으로 최신순으로 기록한다.
 
 
+## 2026-07-30 — 네이버 provider는 PKCE 대신 state를 쓰도록 명시 설정한다
+
+**배경**
+네이버 로그인을 붙이자 authorize 단계에서 네이버가 `client info invalid`/404를 냈다. Auth.js v5는
+OAuth2 provider에 기본으로 PKCE(`code_challenge`)를 켜고 `openid profile email` 스코프를 붙이는데,
+**네이버는 PKCE를 지원하지 않고 authorize에 `state`가 필수**이며 OIDC가 아니다. 기본값 그대로면
+네이버 규격과 어긋난다.
+
+**대안**
+1. 기본값 유지 — 동작 안 함(네이버가 거부).
+2. provider를 네이버 규격에 맞게 override — `checks: ['state']`(PKCE 끔)로 state를 쓰고, 스코프를 비운다.
+
+**결정 — 2안**
+`Naver({ checks: ['state'], authorization: { url, params: { scope: '' } } })`로 명시 설정했다.
+Google·Kakao는 기본값(PKCE)이 맞아 그대로 두고, 네이버만 예외로 둔다. 프로필 필드 위치도 달라
+(`response.*`) `events.signIn`에서 함께 훑는다. 참고: 최초 삽질의 마지막 원인은 코드가 아니라
+`.env.local`의 client_id 오타(`l`↔`I`)였다 — provider 설정과 별개.
+
 ## 2026-07-30 — 월 지출('소비')의 기준을 구매 기준에서 청구 기준으로 통일
 
 **배경**

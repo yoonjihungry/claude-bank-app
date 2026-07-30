@@ -2,6 +2,19 @@
 
 의미 있는 변경 사항을 "날짜 — 무엇을 바꿨는지" 형식으로 최신순으로 기록한다.
 
+## 2026-07-30 — 네이버 로그인 연동 추가
+
+Google·Kakao에 이어 네이버를 로그인 수단으로 추가. DB 스키마는 provider 범용 구조라 변경 없음.
+
+- `lib/auth.ts`: `Naver` provider 추가. **네이버는 PKCE 미지원 + authorize에 `state` 필수**인데
+  Auth.js 기본값이 PKCE를 켜고 state를 빼며 OIDC용 `openid` 스코프를 붙여서, 그대로 두면 네이버가
+  `client info invalid`/404("페이지를 찾을 수 없습니다")를 낸다. `checks: ['state']` + 스코프 비움으로
+  네이버 규격에 맞춘다. `events.signIn`은 네이버 프로필(`response.nickname`/`name`/`profile_image`)도 훑도록 확장.
+- `LoginSheet.tsx`: "네이버로 계속하기" 버튼(초록 `#03C75A` + N 로고). 겸사겸사 상단 💰 브랜드 아이콘 제거.
+- `tokens.css`·`index.css`: `--naver` 토큰(카카오처럼 단색 시스템의 의도적 예외).
+- `.env.example`: `AUTH_NAVER_ID`/`AUTH_NAVER_SECRET`. 네이버 콘솔 Callback URL에 `/api/auth/callback/naver`
+  (로컬·프로덕션) 등록 필요. '개발 중' 상태에선 [멤버관리] 등록 아이디만 로그인되고, 전체 공개는 검수 필요.
+
 ## 2026-07-30 — '이번 달 소비'를 청구 기준으로 통일(할부는 회차분만)
 
 메인의 '소비'는 할부 **총액 전체**를 긁은 달에 잡는데(구매 기준), 바로 옆 '카드 청구 예정'은

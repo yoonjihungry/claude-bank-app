@@ -43,6 +43,9 @@
   --color-kakao: hsl(var(--kakao));
   --color-kakao-foreground: hsl(var(--kakao-foreground));
 
+  --color-naver: hsl(var(--naver));
+  --color-naver-foreground: hsl(var(--naver-foreground));
+
   --color-weekend-sun: hsl(var(--weekend-sun));
   --color-weekend-sat: hsl(var(--weekend-sat));
 
