@@ -11,6 +11,30 @@ function monthIndex(ym: string): number {
   return y * 12 + (m - 1);
 }
 
+/** 청구 기준으로 한 거래가 targetIdx 달에 실리는 금액과 (신용카드면) 회차 정보. 안 실리면 null. */
+interface BillPortion {
+  amount: number;
+  /** 현재 회차(1-base). 일시불·현금·체크는 1. */
+  round: number;
+  /** 총 할부 개월. 일시불·현금·체크는 1. */
+  months: number;
+}
+function billForMonth(
+  tx: { date: string; amount: number; method?: PaymentMethod; installmentMonths?: number },
+  targetIdx: number,
+): BillPortion | null {
+  const purchaseIdx = monthIndex(tx.date.slice(0, 7));
+  // 신용카드 할부만 여러 달에 걸쳐 나뉜다. 그 외(현금·체크·일시불)는 거래한 달에 전액.
+  if (tx.method === 'credit' && !isLumpSum(tx.installmentMonths)) {
+    const months = tx.installmentMonths as number;
+    const round = targetIdx - purchaseIdx + 1; // 구매월이 1회차
+    if (round < 1 || round > months) return null;
+    return { amount: installmentAmount(tx.amount, months, round), round, months };
+  }
+  if (purchaseIdx !== targetIdx) return null;
+  return { amount: tx.amount, round: 1, months: 1 };
+}
+
 export interface CategorySlice {
   categoryId: string;
   name: string;
@@ -62,21 +86,25 @@ export interface BudgetUsage {
 
 export interface Statistics {
   totalIncome: number;
+  /**
+   * 선택 월의 지출 합계 — **청구 기준**. 할부는 이번 달 회차분만, 다른 달에 산 할부의
+   * 이번 달 회차도 포함한다(= 현금·체크 당월분 + creditBillingTotal).
+   */
   totalExpense: number;
   balance: number;
-  /** 선택 월에 '구매한' 신용카드 결제 합계(전액) — totalExpense·소비 분해에 쓴다. */
+  /** 선택 월에 '구매한' 신용카드 결제 합계(전액, 구매 기준) — 참고용. 총소비는 청구 기준이다. */
   creditCardTotal: number;
-  /** 선택 월에 '청구되는' 신용카드 금액 합계(할부는 이번 달 회차분만). */
+  /** 선택 월에 '청구되는' 신용카드 금액 합계(할부는 이번 달 회차분만). totalExpense의 부분집합. */
   creditBillingTotal: number;
   /** 선택 월 청구 항목 목록(청구액 내림차순). */
   creditBillingItems: CreditBillItem[];
-  /** 선택 월의 지출을 카테고리별로 집계(내림차순, 0원 제외) */
+  /** 선택 월의 지출을 카테고리별로 집계(청구 기준, 내림차순, 0원 제외) */
   expenseByCategory: CategorySlice[];
   /** 선택 월의 수입을 카테고리별로 집계(내림차순, 0원 제외) */
   incomeByCategory: CategorySlice[];
-  /** 선택 월의 지출을 결제수단별로 집계(내림차순, 0원 제외) */
+  /** 선택 월의 지출을 결제수단별로 집계(청구 기준, 내림차순, 0원 제외) */
   expenseByMethod: MethodSlice[];
-  /** 선택 월의 거래가 있는 날짜별 순액·누적 추이(날짜 오름차순) */
+  /** 선택 월의 거래가 있는 날짜별 순액·누적 추이(거래일 기준, 날짜 오름차순) */
   dailyTrend: DailyTrendPoint[];
   /** 선택 월에 예산이 설정된 카테고리의 사용 현황(사용률 내림차순) */
   budgetUsage: BudgetUsage[];
@@ -102,76 +130,58 @@ export function useStatistics(month: string): Statistics {
 
   return useMemo(() => {
     const categoryById = new Map(categories.map((c) => [c.id, c]));
+    const targetIdx = monthIndex(month);
+
+    // 1) 거래일 기준 — 수입 집계와 일별 순액(캘린더·추이 차트용). 지출은 여기서 '구매 전액'을
+    //    그날에 찍어 추이/캘린더가 실제 거래일을 반영하게 둔다(할부를 미래로 흩지 않는다).
     let totalIncome = 0;
-    let totalExpense = 0;
-    let creditCardTotal = 0;
-    const expenseMap = new Map<string, number>();
+    let creditCardTotal = 0; // 이번 달 '구매한' 신용카드 전액(참고용)
     const incomeMap = new Map<string, number>();
-    const methodMap = new Map<PaymentMethod | 'none', number>();
-    // 선택 월의 날짜별 순액(수입 − 지출)
     const dailyNet = new Map<string, number>();
 
     for (const tx of transactions) {
-      const txMonth = tx.date.slice(0, 7);
-      if (txMonth !== month) continue;
-
+      if (tx.date.slice(0, 7) !== month) continue;
       const signed = tx.type === 'income' ? tx.amount : -tx.amount;
       dailyNet.set(tx.date, (dailyNet.get(tx.date) ?? 0) + signed);
-
       if (tx.type === 'income') {
         totalIncome += tx.amount;
         incomeMap.set(tx.category, (incomeMap.get(tx.category) ?? 0) + tx.amount);
-      } else {
-        totalExpense += tx.amount;
-        expenseMap.set(tx.category, (expenseMap.get(tx.category) ?? 0) + tx.amount);
-        const mkey = tx.method ?? 'none';
-        methodMap.set(mkey, (methodMap.get(mkey) ?? 0) + tx.amount);
-        if (tx.method === 'credit') {
-          creditCardTotal += tx.amount;
-        }
+      } else if (tx.method === 'credit') {
+        creditCardTotal += tx.amount;
       }
     }
 
-    // 이번 달 신용카드 청구 계산 — 다른 달에 구매한 할부도 이번 달 회차분을 청구한다.
-    const targetIdx = monthIndex(month);
+    // 2) 청구 기준 지출 집계 — 소비 총액·카테고리·결제수단·예산이 모두 이 값을 쓴다.
+    //    현금·체크·일시불은 거래한 달에 전액, 할부는 이번 달 회차분만(다른 달에 산 할부도 포함).
+    let totalExpense = 0;
+    let creditBillingTotal = 0;
+    const expenseMap = new Map<string, number>();
+    const methodMap = new Map<PaymentMethod | 'none', number>();
     const creditBillingItems: CreditBillItem[] = [];
+
     for (const tx of transactions) {
-      if (tx.type !== 'expense' || tx.method !== 'credit') continue;
+      if (tx.type !== 'expense') continue;
+      const bill = billForMonth(tx, targetIdx);
+      if (!bill) continue;
 
-      const purchaseIdx = monthIndex(tx.date.slice(0, 7));
-      const cat = categoryById.get(tx.category);
-      const name = cat?.name ?? '알 수 없음';
+      totalExpense += bill.amount;
+      expenseMap.set(tx.category, (expenseMap.get(tx.category) ?? 0) + bill.amount);
+      const mkey = tx.method ?? 'none';
+      methodMap.set(mkey, (methodMap.get(mkey) ?? 0) + bill.amount);
 
-      if (isLumpSum(tx.installmentMonths)) {
-        // 일시불 — 구매한 달에 전액 청구
-        if (purchaseIdx === targetIdx) {
-          creditBillingItems.push({
-            id: tx.id,
-            name,
-            memo: tx.memo,
-            amount: tx.amount,
-            round: 1,
-            months: 1,
-          });
-        }
-        continue;
-      }
-
-      const months = tx.installmentMonths as number;
-      const round = targetIdx - purchaseIdx + 1; // 구매월이 1회차
-      if (round >= 1 && round <= months) {
+      if (tx.method === 'credit') {
+        creditBillingTotal += bill.amount;
         creditBillingItems.push({
           id: tx.id,
-          name,
+          name: categoryById.get(tx.category)?.name ?? '알 수 없음',
           memo: tx.memo,
-          amount: installmentAmount(tx.amount, months, round),
-          round,
-          months,
+          amount: bill.amount,
+          round: bill.round,
+          months: bill.months,
         });
       }
     }
     creditBillingItems.sort((a, b) => b.amount - a.amount);
-    const creditBillingTotal = creditBillingItems.reduce((s, i) => s + i.amount, 0);
 
     let running = 0;
     const dailyTrend: DailyTrendPoint[] = [...dailyNet.entries()]
