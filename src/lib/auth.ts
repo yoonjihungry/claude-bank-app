@@ -20,4 +20,33 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       return session;
     },
   },
+  events: {
+    // 어댑터는 '최초 가입' 때만 프로필을 저장한다. 그래서 카카오 동의항목(닉네임/프로필 사진)을
+    // 나중에 켜면 기존 사용자는 이름이 빈 채로 남는다. 로그인할 때마다 OAuth 프로필의
+    // 이름·사진을 사용자 레코드에 반영해, 기존 계정도 다음 로그인에서 채워지도록 한다.
+    async signIn({ user, profile }) {
+      if (!user?.id || !profile) return;
+      // 구글/카카오의 프로필 필드 위치가 달라 둘 다 훑는다(카카오는 properties·kakao_account 아래).
+      const p = profile as {
+        name?: string;
+        picture?: string;
+        properties?: { nickname?: string; profile_image?: string };
+        kakao_account?: { profile?: { nickname?: string; profile_image_url?: string } };
+      };
+      const name =
+        p.properties?.nickname ?? p.kakao_account?.profile?.nickname ?? p.name;
+      const image =
+        p.properties?.profile_image ??
+        p.kakao_account?.profile?.profile_image_url ??
+        p.picture;
+      if (!name && !image) return;
+      await prisma.user.update({
+        where: { id: user.id },
+        data: {
+          ...(name ? { name } : {}),
+          ...(image ? { image } : {}),
+        },
+      });
+    },
+  },
 });

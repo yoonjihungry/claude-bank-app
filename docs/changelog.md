@@ -2,6 +2,16 @@
 
 의미 있는 변경 사항을 "날짜 — 무엇을 바꿨는지" 형식으로 최신순으로 기록한다.
 
+## 2026-07-29 — OAuth 프로필 이름·사진을 로그인마다 동기화
+
+카카오 로그인 후 헤더에 이름이 안 뜨고 '사용자'로 표시되던 문제 수정. PrismaAdapter는 최초 가입
+(`createUser`) 때만 프로필을 저장해서, 동의항목(닉네임)을 나중에 켠 기존 계정은 재로그인해도 이름이
+빈 채로 남았다.
+
+- `lib/auth.ts`: `events.signIn` 추가 — 로그인마다 OAuth 프로필의 이름·사진을 `prisma.user.update`로
+  반영. 구글/카카오의 필드 위치가 달라 `properties.nickname` / `kakao_account.profile.nickname` /
+  `name` 순으로, 사진도 `profile_image` / `profile_image_url` / `picture` 순으로 훑는다.
+
 ## 2026-07-29 — 카카오 로그인 연동 추가
 
 Google에 이어 카카오(Auth.js Kakao provider)를 로그인 수단으로 추가. DB 스키마는 provider 범용
