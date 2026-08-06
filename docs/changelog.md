@@ -2,6 +2,20 @@
 
 의미 있는 변경 사항을 "날짜 — 무엇을 바꿨는지" 형식으로 최신순으로 기록한다.
 
+## 2026-08-06 — 공유데스크(/desk) 데모에 검색 흐름 3화면 추가
+
+기존 `/desk`(공유데스크 피그마 데모 홈) 위에 사용자 스크린샷 기준 검색 흐름을 새로 붙였다.
+모두 `(shell)` 밖 독립 라우트 + 얇은 래퍼(`app/desk/*/page.tsx`) + 화면 본체(`screens/Desk*Page.tsx`)이고,
+색은 기존 `--desk-*` 오렌지 토큰만 쓴다(사진은 회색 플레이스홀더).
+
+- `/desk/search`(`DeskSearchPage`): 데스크 찾기 필터. 고정 섹션탭 + 스크롤스파이, 데스크 등급·사장님
+  신뢰 등급·가격범위(듀얼 슬라이더)·편의시설·정렬·즉시입주, 하단 초기화/검색 고정바.
+- `/desk/region`(`DeskRegionPage`): 지역 선택. 좌 시/도 레일(선택=주황 알약) + 우 세부 지역. 서울은
+  시안 그대로, 나머지 시/도는 대표 시·군을 채움(`REGION_DISTRICTS`).
+- `/desk/results`(`DeskResultsPage`): 검색 결과 세로 카드 리스트(사진·배지·가격·보증금), 보기 토글·정렬·필터, 지도 플로팅 버튼.
+- 흐름 연결: 홈 하단 `검색` 탭 → search → 검색 → results → 필터/정렬 → search. 지역칸 → region → 복귀.
+  필터 상태는 `screens/deskSearchStore.ts`(sessionStorage)로 두 화면이 공유해 지역 왕복에도 유지.
+
 ## 2026-07-30 — 컬러/레이아웃 리디자인(4a 미니멀 블루)
 
 디자인 handoff(`design_handoff_ledger_color_redesign`)의 4a 안 반영. 이전 "무채색+파랑 #2f6bff"

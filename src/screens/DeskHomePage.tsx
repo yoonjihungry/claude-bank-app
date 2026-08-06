@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
+import { useRouter } from 'next/navigation';
 
 /**
  * 공유데스크 데모 홈 화면 (/desk)
@@ -795,24 +796,26 @@ function Footer() {
 }
 
 function BottomNav() {
+  const router = useRouter();
+  // href가 있는 탭은 해당 라우트로 이동한다(현재는 '검색'만 연결 — 데스크 찾기 화면).
   const tabs = [
-    { label: '홈', icon: HomeIcon },
-    { label: '검색', icon: SearchIcon },
-    { label: '이용 내역', icon: CalendarIcon },
-    { label: '마이페이지', icon: UserIcon },
+    { label: '홈', icon: HomeIcon, href: undefined as string | undefined },
+    { label: '검색', icon: SearchIcon, href: '/desk/search' },
+    { label: '이용 내역', icon: CalendarIcon, href: undefined },
+    { label: '마이페이지', icon: UserIcon, href: undefined },
   ];
   const [active, setActive] = useState('홈');
   return (
     // 프레임 하단에 고정되어 스크롤을 따라다닌다(sticky → 420px 프레임 폭에 자동으로 맞음).
     <div className="sticky bottom-0 z-20 bg-desk-surface">
       <nav className="flex items-center justify-around py-2">
-        {tabs.map(({ label, icon: Icon }) => {
+        {tabs.map(({ label, icon: Icon, href }) => {
           const isActive = active === label;
           return (
             <button
               key={label}
               type="button"
-              onClick={() => setActive(label)}
+              onClick={() => (href ? router.push(href) : setActive(label))}
               aria-pressed={isActive}
               className={`flex w-[68px] flex-col items-center gap-1.5 py-1 ${isActive ? 'text-desk-accent' : 'text-desk-body'}`}
             >
